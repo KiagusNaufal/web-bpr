@@ -1,0 +1,185 @@
+@import 'tailwindcss';
+
+@source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
+@source '../../storage/framework/views/*.php';
+
+@theme {
+    --font-sans: 'Montserrat', ui-sans-serif, system-ui, sans-serif;
+    --font-serif: 'Montserrat', ui-sans-serif, system-ui, sans-serif;
+
+    --color-brand: #009688;
+    --color-brand-dark: #00695f;
+    --color-brand-deep: #00433d;
+    --color-accent: #f27e00;
+    --color-accent-dark: #d46d00;
+    --color-soft: #f5faf9;
+    --color-ink: #263238;
+    --color-muted: #64748b;
+    --color-line: #e2e8f0;
+
+    --radius-sm: 2px;
+    --radius-md: 4px;
+
+    --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
+    --ease-out-quart: cubic-bezier(0.25, 1, 0.5, 1);
+}
+
+@layer base {
+    html {
+        scroll-behavior: smooth;
+    }
+
+    body {
+        @apply bg-white font-sans text-ink antialiased;
+        line-height: 1.65;
+    }
+
+    h1, h2, h3, h4 {
+        @apply font-serif text-ink;
+        line-height: 1.2;
+        font-weight: 700;
+        text-wrap: balance;
+    }
+
+    p, li, dd {
+        text-wrap: pretty;
+    }
+
+    :focus-visible {
+        outline: 2px solid var(--color-accent);
+        outline-offset: 3px;
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+        html { scroll-behavior: auto; }
+        *, *::before, *::after { animation: none !important; transition: none !important; }
+    }
+}
+
+@layer components {
+    .container-page {
+        @apply mx-auto w-full max-w-7xl px-5 sm:px-8 lg:px-10;
+    }
+
+    .eyebrow {
+        @apply text-xs font-semibold uppercase tracking-[0.14em] text-brand-dark;
+    }
+
+    .link-arrow {
+        @apply inline-flex min-h-11 items-center gap-2 text-sm font-semibold text-ink underline decoration-ink/60 decoration-2 underline-offset-8 transition-colors duration-200 hover:text-brand-dark hover:decoration-accent;
+    }
+
+    .link-arrow svg {
+        transition: transform 0.25s var(--ease-out-quart);
+    }
+
+    .link-arrow:hover svg {
+        transform: translateX(4px);
+    }
+
+    .field {
+        @apply block min-h-11 w-full rounded-md border border-line bg-white px-3.5 py-2.5 text-sm text-ink placeholder:text-muted transition-colors duration-150 focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand/30;
+    }
+
+    .tab-chip {
+        @apply inline-flex min-h-11 items-center justify-center whitespace-nowrap border border-line bg-white px-4 text-xs font-semibold text-ink transition-all duration-200 hover:-translate-y-0.5 hover:border-brand hover:text-brand-dark aria-pressed:border-brand-dark aria-pressed:bg-brand-dark aria-pressed:text-white;
+    }
+}
+
+/* 1. Scroll Reveal dengan Stagger & Spring-like Easing */
+.js .reveal {
+    opacity: 0;
+    transform: translateY(22px);
+    transition:
+        opacity 0.75s var(--ease-out-expo),
+        transform 0.75s var(--ease-out-expo);
+    transition-delay: var(--reveal-delay, 0ms);
+    will-change: opacity, transform;
+}
+
+.js .reveal.is-visible {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+/* 2. Animasi Garis Langkah Pengajuan (Step Line Draw) */
+.js .step-line {
+    transform: scaleX(0);
+    transform-origin: left center;
+    transition: transform 0.9s var(--ease-out-expo);
+    transition-delay: calc(var(--reveal-delay, 0ms) + 220ms);
+}
+
+.js .reveal.is-visible .step-line {
+    transform: scaleX(1);
+}
+
+/* 3. Hero Slide Ken Burns & Staggered Text */
+.hero-slide-img {
+    transform: scale(1.06);
+    transition: transform 6.5s var(--ease-out-quart);
+    will-change: transform;
+}
+
+[data-slide][aria-hidden="false"] .hero-slide-img {
+    transform: scale(1);
+}
+
+.hero-slide-box > * {
+    opacity: 0;
+    transform: translateY(16px);
+    transition:
+        opacity 0.65s var(--ease-out-expo),
+        transform 0.65s var(--ease-out-expo);
+}
+
+[data-slide][aria-hidden="false"] .hero-slide-box > *:nth-child(1) { opacity: 1; transform: translateY(0); transition-delay: 120ms; }
+[data-slide][aria-hidden="false"] .hero-slide-box > *:nth-child(2) { opacity: 1; transform: translateY(0); transition-delay: 220ms; }
+[data-slide][aria-hidden="false"] .hero-slide-box > *:nth-child(3) { opacity: 1; transform: translateY(0); transition-delay: 320ms; }
+[data-slide][aria-hidden="false"] .hero-slide-box > *:nth-child(4) { opacity: 1; transform: translateY(0); transition-delay: 420ms; }
+
+/* Progress Bar Indikator Slide */
+@keyframes slideProgress {
+    from { transform: scaleX(0); }
+    to { transform: scaleX(1); }
+}
+
+[data-dot][aria-current="true"] .dot-fill {
+    animation: slideProgress 6.5s linear forwards;
+    transform-origin: left center;
+}
+
+[data-slider]:hover [data-dot][aria-current="true"] .dot-fill {
+    animation-play-state: paused;
+}
+
+/* 4. Filter Item Transisi Halus (Tab Informasi & Suku Bunga) */
+[data-category] {
+    transition:
+        opacity 0.25s var(--ease-out-quart),
+        transform 0.25s var(--ease-out-quart);
+}
+
+[data-category].is-filtering-out {
+    opacity: 0;
+    transform: translateY(8px);
+}
+
+/* 5. Animasi Accordion FAQ */
+details > div.faq-body {
+    display: grid;
+    grid-template-rows: 0fr;
+    opacity: 0;
+    transition:
+        grid-template-rows 0.3s var(--ease-out-quart),
+        opacity 0.25s var(--ease-out-quart);
+}
+
+details[open] > div.faq-body {
+    grid-template-rows: 1fr;
+    opacity: 1;
+}
+
+details > div.faq-body > div {
+    overflow: hidden;
+}
