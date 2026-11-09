@@ -2,12 +2,15 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\ResolvesMediaUrl;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class OrganizationalStructure extends Model
 {
+    use ResolvesMediaUrl;
+
     protected $guarded = ['id'];
 
     public function parent(): BelongsTo
@@ -18,5 +21,10 @@ class OrganizationalStructure extends Model
     public function children(): HasMany
     {
         return $this->hasMany(self::class, 'parent_id');
+    }
+
+    public function getPhotoUrlAttribute(): ?string
+    {
+        return $this->mediaUrl($this->photo_path);
     }
 }

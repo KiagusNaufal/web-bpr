@@ -84,6 +84,16 @@
     .tab-chip {
         @apply inline-flex min-h-11 items-center justify-center whitespace-nowrap border border-line bg-white px-4 text-xs font-semibold text-ink transition-all duration-200 hover:-translate-y-0.5 hover:border-brand hover:text-brand-dark aria-pressed:border-brand-dark aria-pressed:bg-brand-dark aria-pressed:text-white;
     }
+
+    .sim-option {
+        @apply flex min-h-14 w-full cursor-pointer items-center justify-between gap-4 border-l-4 border-transparent py-4 pl-4 pr-3 text-left text-ink transition-all duration-200 hover:bg-white/60 hover:text-brand-dark;
+    }
+
+    .sim-option[aria-selected="true"] {
+        border-left-color: var(--color-accent);
+        background-color: #ffffff;
+        color: var(--color-brand-dark);
+    }
 }
 
 /* 1. Scroll Reveal dengan Stagger & Spring-like Easing */
@@ -183,3 +193,42 @@ details[open] > div.faq-body {
 details > div.faq-body > div {
     overflow: hidden;
 }
+
+/* 6. Loading Screen (Preloader) */
+@keyframes loaderProgress {
+    0% { transform: scaleX(0.08); }
+    65% { transform: scaleX(0.85); }
+    100% { transform: scaleX(1); }
+}
+
+@keyframes loaderFadeIn {
+    from { opacity: 0; transform: translateY(8px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.page-loader {
+    opacity: 1;
+    visibility: visible;
+    transition:
+        opacity 0.45s var(--ease-out-expo),
+        transform 0.45s var(--ease-out-expo),
+        visibility 0.45s;
+}
+
+.page-loader .loader-content {
+    animation: loaderFadeIn 0.35s var(--ease-out-quart) both;
+}
+
+.page-loader .loader-bar {
+    transform-origin: left center;
+    animation: loaderProgress 0.5s var(--ease-out-quart) forwards;
+}
+
+.page-loader.is-loaded {
+    opacity: 0;
+    transform: translateY(-10px);
+    visibility: hidden;
+    pointer-events: none;
+}
+
+/* Progress Bar Indikator Slide */

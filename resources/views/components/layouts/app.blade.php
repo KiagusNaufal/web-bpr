@@ -25,6 +25,29 @@
     @stack('head')
 </head>
 <body class="flex min-h-screen flex-col">
+    {{-- Loading Screen / Preloader --}}
+    <div id="page-loader" data-loader role="status" aria-live="polite" aria-label="Memuat halaman" class="page-loader fixed inset-0 z-[100] flex flex-col items-center justify-center bg-white">
+        <div class="absolute inset-x-0 top-0 flex h-1">
+            <span class="w-2/3 bg-brand"></span>
+            <span class="w-1/3 bg-accent"></span>
+        </div>
+        <div class="loader-content flex flex-col items-center px-6 text-center">
+            @if ($profile->logo_url)
+                <img src="{{ $profile->logo_url }}" alt="{{ $siteName }}" width="260" height="44" class="h-11 w-auto sm:h-12">
+            @else
+                <span class="font-serif text-xl font-bold text-ink">{{ $siteName }}</span>
+            @endif
+            <div class="mt-6 h-1 w-48 overflow-hidden bg-line">
+                <span class="loader-bar block h-full w-full bg-accent"></span>
+            </div>
+            <p class="mt-3 text-[11px] font-semibold uppercase tracking-[0.16em] text-muted">Memuat Layanan Perbankan</p>
+        </div>
+    </div>
+    <noscript><style>#page-loader{display:none!important}</style></noscript>
+
+    {{-- Top Progress Bar saat pindah halaman --}}
+    <div id="nav-progress" data-nav-progress aria-hidden="true" class="pointer-events-none fixed inset-x-0 top-0 z-[90] h-0.5 origin-left scale-x-0 bg-accent transition-transform duration-300"></div>
+
     <a href="#konten" class="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-[60] focus:bg-white focus:px-4 focus:py-2">Lewati ke konten</a>
 
     @include('partials.navbar')
@@ -41,4 +64,3 @@
     </button>
 </body>
 </html>
-

@@ -21,10 +21,11 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        // Profil BPR dipakai navbar, footer, dan meta; dimuat sekali per request.
-        View::composer(['components.layouts.*', 'partials.*', 'pages.*'], function ($view) {
-            static $profile = null;
-            $view->with('profile', $profile ??= CompanyProfile::current());
+        // Profil BPR dipakai navbar, footer, meta, dan panel admin.
+        View::composer(['components.layouts.*', 'partials.*', 'pages.*', 'admin.*', 'errors.*'], function ($view) {
+            if (! array_key_exists('profile', $view->getData())) {
+                $view->with('profile', once(fn () => CompanyProfile::current()));
+            }
         });
     }
 }

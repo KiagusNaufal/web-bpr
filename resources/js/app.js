@@ -3,18 +3,22 @@ import {
     ArrowRight, ArrowUp, ArrowUpRight, Menu, X, Phone, Mail, MapPin, Clock,
     MessageCircle, ChevronRight, ChevronLeft, Search, FileText, Download, Eye,
     Landmark, Calculator, Percent, PiggyBank, HandCoins, CalendarClock,
+    LayoutDashboard, Package, Newspaper, Building2, Inbox, LogOut, Plus, Pencil,
+    Trash2, Check, ExternalLink, Users, Quote, Image,
 } from 'lucide';
 
 const icons = {
     ArrowRight, ArrowUp, ArrowUpRight, Menu, X, Phone, Mail, MapPin, Clock,
     MessageCircle, ChevronRight, ChevronLeft, Search, FileText, Download, Eye,
     Landmark, Calculator, Percent, PiggyBank, HandCoins, CalendarClock,
+    LayoutDashboard, Package, Newspaper, Building2, Inbox, LogOut, Plus, Pencil,
+    Trash2, Check, ExternalLink, Users, Quote, Image,
 };
 
 document.documentElement.classList.add('js');
 createIcons({ icons, attrs: { 'stroke-width': 1.75, 'aria-hidden': 'true' } });
 
-const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches || navigator.webdriver || /Headless/i.test(navigator.userAgent);
 
 /* Efek bayangan halus pada navbar saat di-scroll */
 const header = document.querySelector('header.sticky');
@@ -137,6 +141,51 @@ document.querySelectorAll('[data-simulator]').forEach((root) => {
     calc();
 });
 
+/* Simulasi deposito (bunga sederhana sebelum pajak) dengan animasi angka halus */
+document.querySelectorAll('[data-deposito-sim]').forEach((root) => {
+    const q = (n) => root.querySelector(`[data-dep="${n}"]`);
+    const money = new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 });
+
+    const calc = () => {
+        const principal = Number(q('amount').value);
+        const months = Number(q('tenor').value);
+        const rate = Number(q('rate').value.replace(',', '.'));
+
+        q('amount-label').textContent = money.format(principal);
+        q('tenor-label').textContent = `${months} bulan`;
+
+        if (!(principal > 0) || !(months > 0) || !(rate >= 0)) {
+            ['interest', 'total'].forEach((k) => {
+                const el = q(k);
+                if (el) {
+                    delete el.dataset.currentValue;
+                    el.textContent = '—';
+                }
+            });
+            return;
+        }
+        const interest = principal * (rate / 100) * (months / 12);
+        const total = principal + interest;
+
+        animateCurrency(q('interest'), interest, money);
+        animateCurrency(q('total'), total, money);
+    };
+
+    root.querySelectorAll('input').forEach((i) => i.addEventListener('input', calc));
+    calc();
+});
+
+/* Switcher panel simulasi (Kredit <-> Deposito) */
+document.querySelectorAll('[data-switch]').forEach((root) => {
+    const tabs = [...root.querySelectorAll('[data-switch-target]')];
+    const panels = [...root.querySelectorAll('[data-switch-panel]')];
+    tabs.forEach((btn) => btn.addEventListener('click', () => {
+        const target = btn.dataset.switchTarget;
+        tabs.forEach((t) => t.setAttribute('aria-selected', String(t === btn)));
+        panels.forEach((p) => p.classList.toggle('hidden', p.dataset.switchPanel !== target));
+    }));
+});
+
 /* Slider banner hero dengan Ken Burns, teks bertahap, & progress bar */
 document.querySelectorAll('[data-slider]').forEach((root) => {
     const slides = [...root.querySelectorAll('[data-slide]')];
@@ -210,3 +259,83 @@ document.querySelectorAll('[data-tabs]').forEach((root) => {
         });
     }));
 });
+
+/* Loading screen (Preloader) & transisi navigasi antar halaman */
+const pageLoader = document.querySelector('[data-loader]');
+const navProgress = document.querySelector('[data-nav-progress]');
+
+if (pageLoader) {
+    const dismissLoader = () => {
+        if (pageLoader.classList.contains('is-loaded')) return;
+        pageLoader.classList.add('is-loaded');
+        sessionStorage.setItem('bpr_loaded', '1');
+        setTimeout(() => {
+            pageLoader.style.display = 'none';
+        }, 460);
+    };
+
+    if (reduceMotion || navigator.webdriver) {
+        pageLoader.style.display = 'none';
+    } else {
+        const firstVisit = !sessionStorage.getItem('bpr_loaded');
+        const delay = firstVisit ? 320 : 120;
+        setTimeout(dismissLoader, delay);
+    }
+
+    // Pastikan tombol Back/Forward browser tidak memunculkan loader yang tertutup
+    window.addEventListener('pageshow', (e) => {
+        if (e.persisted) {
+            pageLoader.style.display = 'none';
+        }
+    });
+}
+
+/* Top progress bar + kemunculan halus saat klik link internal */
+if (navProgress && !reduceMotion) {
+    document.addEventListener('click', (e) => {
+        const link = e.target.closest('a[href]');
+        if (!link) return;
+        if (link.target === '_blank' || link.hasAttribute('download') || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
+
+        const href = link.getAttribute('href') || '';
+        if (!href || href.startsWith('#') || href.startsWith('mailto:') || href.startsWith('tel:') || href.startsWith('javascript:')) return;
+
+        try {
+            const url = new URL(link.href, window.location.origin);
+            if (url.origin !== window.location.origin) return;
+            if (url.pathname === window.location.pathname && url.search === window.location.search && url.hash) return;
+
+            navProgress.style.transform = 'scaleX(0.75)';
+        } catch {
+            // Abaikan URL tidak valid
+        }
+    });
+}
+
+/* Modal pratinjau PDF Laporan Keuangan */
+const pdfModal = document.querySelector('[data-pdf-modal]');
+if (pdfModal) {
+    const frame = pdfModal.querySelector('[data-pdf-frame]');
+    const titleEl = pdfModal.querySelector('[data-pdf-modal-title]');
+    const downloadEl = pdfModal.querySelector('[data-pdf-modal-download]');
+    const closeBtn = pdfModal.querySelector('[data-pdf-close]');
+
+    document.querySelectorAll('[data-pdf-preview]').forEach((btn) => {
+        btn.addEventListener('click', () => {
+            if (frame) frame.src = btn.dataset.pdfPreview || '';
+            if (titleEl) titleEl.textContent = btn.dataset.pdfTitle || 'Pratinjau Laporan PDF';
+            if (downloadEl) downloadEl.href = btn.dataset.pdfDownload || btn.dataset.pdfPreview || '#';
+            pdfModal.showModal();
+        });
+    });
+
+    const closeModal = () => {
+        pdfModal.close();
+        if (frame) frame.src = 'about:blank';
+    };
+
+    closeBtn?.addEventListener('click', closeModal);
+    pdfModal.addEventListener('click', (e) => {
+        if (e.target === pdfModal) closeModal();
+    });
+}
