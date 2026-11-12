@@ -4,7 +4,7 @@ import {
     MessageCircle, ChevronRight, ChevronLeft, Search, FileText, Download, Eye,
     Landmark, Calculator, Percent, PiggyBank, HandCoins, CalendarClock,
     LayoutDashboard, Package, Newspaper, Building2, Inbox, LogOut, Plus, Pencil,
-    Trash2, Check, ExternalLink, Users, Quote, Image,
+    Trash2, Check, ExternalLink, Users, Quote, Image, Network, MessageSquareQuote,
 } from 'lucide';
 
 const icons = {
@@ -12,7 +12,7 @@ const icons = {
     MessageCircle, ChevronRight, ChevronLeft, Search, FileText, Download, Eye,
     Landmark, Calculator, Percent, PiggyBank, HandCoins, CalendarClock,
     LayoutDashboard, Package, Newspaper, Building2, Inbox, LogOut, Plus, Pencil,
-    Trash2, Check, ExternalLink, Users, Quote, Image,
+    Trash2, Check, ExternalLink, Users, Quote, Image, Network, MessageSquareQuote,
 };
 
 document.documentElement.classList.add('js');
@@ -337,5 +337,111 @@ if (pdfModal) {
     closeBtn?.addEventListener('click', closeModal);
     pdfModal.addEventListener('click', (e) => {
         if (e.target === pdfModal) closeModal();
+    });
+}
+
+/* Tab & Filter Panel Admin */
+document.querySelectorAll('[data-admin-tabs]').forEach((root) => {
+    const btns = [...root.querySelectorAll('[data-admin-tab-btn]')];
+    const panels = [...root.querySelectorAll('[data-admin-tab-panel]')];
+
+    const activate = (key) => {
+        btns.forEach((b) => {
+            const on = b.dataset.adminTabBtn === key;
+            b.setAttribute('aria-selected', String(on));
+            b.className = `inline-flex cursor-pointer items-center gap-2 border px-4 py-2.5 text-xs font-bold transition-colors ${
+                on
+                    ? 'border-brand-dark bg-brand-dark text-white'
+                    : 'border-line bg-white text-ink hover:border-brand hover:text-brand-dark'
+            }`;
+        });
+        panels.forEach((p) => {
+            p.classList.toggle('hidden', p.dataset.adminTabPanel !== key);
+        });
+    };
+
+    const hashKey = window.location.hash.replace('#', '');
+    if (hashKey && panels.some((p) => p.dataset.adminTabPanel === hashKey)) {
+        activate(hashKey);
+    }
+
+    btns.forEach((b) => {
+        b.addEventListener('click', () => {
+            const key = b.dataset.adminTabBtn;
+            activate(key);
+            const url = new URL(window.location.href);
+            url.searchParams.set('tab', key);
+            url.hash = '';
+            window.history.replaceState({}, '', url);
+        });
+    });
+});
+
+document.querySelectorAll('[data-filter-scope]').forEach((scope) => {
+    const btns = [...scope.querySelectorAll('[data-filter-btn]')];
+    const items = [...scope.querySelectorAll('[data-filter-item]')];
+    btns.forEach((b) => {
+        b.addEventListener('click', () => {
+            const val = b.dataset.filterBtn;
+            btns.forEach((x) => {
+                const on = x === b;
+                x.className = `cursor-pointer border px-3.5 py-2 text-xs font-bold ${
+                    on
+                        ? 'border-brand-dark bg-brand-dark text-white'
+                        : 'border-line bg-soft text-ink hover:border-brand'
+                }`;
+            });
+            items.forEach((el) => {
+                el.classList.toggle('hidden', val !== 'all' && el.dataset.filterItem !== val);
+            });
+        });
+    });
+});
+
+/* Pemisah Bagian Halaman Tentang Kami (Dropdown & Sub-navigasi) */
+const aboutPanels = [...document.querySelectorAll('[data-about-panel]')];
+if (aboutPanels.length) {
+    const aboutSelect = document.querySelector('[data-about-select]');
+    const aboutBtns = [...document.querySelectorAll('[data-about-btn]')];
+
+    const switchAbout = (key) => {
+        if (!aboutPanels.some((p) => p.dataset.aboutPanel === key)) return;
+        aboutPanels.forEach((p) => {
+            p.classList.toggle('hidden', p.dataset.aboutPanel !== key);
+        });
+        aboutBtns.forEach((b) => {
+            const on = b.dataset.aboutBtn === key;
+            b.className = `border px-3.5 py-2 text-xs font-bold transition-colors ${
+                on
+                    ? 'border-brand-dark bg-brand-dark text-white'
+                    : 'border-line bg-white text-ink hover:border-brand hover:text-brand-dark'
+            }`;
+        });
+        if (aboutSelect) aboutSelect.value = key;
+        const url = new URL(window.location.href);
+        url.searchParams.set('bagian', key);
+        url.hash = '';
+        window.history.replaceState({}, '', url);
+    };
+
+    const hashSection = window.location.hash.replace('#', '');
+    if (hashSection && aboutPanels.some((p) => p.dataset.aboutPanel === hashSection)) {
+        switchAbout(hashSection);
+    }
+
+    aboutSelect?.addEventListener('change', (e) => switchAbout(e.target.value));
+    aboutBtns.forEach((b) => {
+        b.addEventListener('click', (e) => {
+            e.preventDefault();
+            switchAbout(b.dataset.aboutBtn);
+        });
+    });
+    document.querySelectorAll('[data-about-nav]').forEach((navLink) => {
+        navLink.addEventListener('click', (e) => {
+            if (window.location.pathname === '/tentang-kami') {
+                e.preventDefault();
+                switchAbout(navLink.dataset.aboutNav);
+            }
+        });
     });
 }

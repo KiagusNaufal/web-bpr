@@ -4,7 +4,56 @@
         <x-button :href="route('admin.products.create')" icon="plus">Tambah Produk Baru</x-button>
     </div>
 
-    <div class="mt-6 overflow-x-auto border border-line bg-white">
+    {{-- Bar Filter Kategori, Status, dan Pencarian --}}
+    <div class="mt-6 flex flex-col justify-between gap-4 border border-line bg-white p-4 lg:flex-row lg:items-center">
+        <nav aria-label="Filter kategori produk" class="flex flex-wrap gap-2">
+            <a
+                href="{{ route('admin.products.index', array_filter(['status' => $activeStatus?->value, 'q' => $search])) }}"
+                class="border px-3.5 py-2 text-xs font-bold transition-colors {{ $activeType === null ? 'border-brand-dark bg-brand-dark text-white' : 'border-line bg-soft text-ink hover:border-brand' }}"
+            >
+                Semua ({{ $counts['all'] ?? 0 }})
+            </a>
+            @foreach ($types as $t)
+                <a
+                    href="{{ route('admin.products.index', array_filter(['type' => $t->value, 'status' => $activeStatus?->value, 'q' => $search])) }}"
+                    class="border px-3.5 py-2 text-xs font-bold transition-colors {{ $activeType === $t ? 'border-brand-dark bg-brand-dark text-white' : 'border-line bg-soft text-ink hover:border-brand' }}"
+                >
+                    {{ $t->label() }} ({{ $counts[$t->value] ?? 0 }})
+                </a>
+            @endforeach
+        </nav>
+
+        <form action="{{ route('admin.products.index') }}" method="GET" class="flex flex-wrap items-center gap-2">
+            @if ($activeType)
+                <input type="hidden" name="type" value="{{ $activeType->value }}">
+            @endif
+            <select name="status" onchange="this.form.submit()" class="field !w-auto !py-2 text-xs font-semibold">
+                <option value="">Semua Status</option>
+                @foreach ($statuses as $st)
+                    <option value="{{ $st->value }}" @selected($activeStatus === $st)>{{ $st->label() }}</option>
+                @endforeach
+            </select>
+            <div class="flex items-center gap-1.5">
+                <input
+                    type="search"
+                    name="q"
+                    value="{{ $search }}"
+                    placeholder="Cari nama produk..."
+                    class="field !w-48 !py-2 text-xs"
+                >
+                <button type="submit" class="cursor-pointer border border-brand-dark bg-brand-dark px-3.5 py-2 text-xs font-bold text-white hover:bg-brand-deep">
+                    Cari
+                </button>
+                @if ($activeType || $activeStatus || $search !== '')
+                    <a href="{{ route('admin.products.index') }}" class="border border-line bg-soft px-3 py-2 text-xs font-semibold text-muted hover:text-ink">
+                        Reset
+                    </a>
+                @endif
+            </div>
+        </form>
+    </div>
+
+    <div class="mt-4 overflow-x-auto border border-line bg-white">
         <table class="w-full min-w-[680px] text-left text-sm">
             <thead class="border-b border-line bg-brand-deep text-xs uppercase tracking-[0.1em] text-white">
                 <tr>
@@ -48,7 +97,7 @@
                     </tr>
                 @empty
                     <tr>
-                        <td colspan="5" class="px-5 py-8 text-center text-muted">Belum ada produk yang terdaftar.</td>
+                        <td colspan="5" class="px-5 py-8 text-center text-muted">Tidak ada produk yang sesuai filter.</td>
                     </tr>
                 @endforelse
             </tbody>

@@ -1,12 +1,13 @@
 @php
-    $links = [
-        ['Beranda', 'home', 'home'],
-        ['Produk', 'products.index', 'produk*'],
-        ['Tentang Kami', 'about', 'tentang-kami'],
-        ['Informasi', 'articles.index', 'informasi*'],
-        ['Laporan Keuangan', 'reports.index', 'laporan-keuangan'],
-        ['Kontak', 'contact', 'kontak'],
+    $aboutMenus = [
+        ['profil', 'Profil Perusahaan'],
+        ['sejarah', 'Sejarah Perusahaan'],
+        ['visi-misi', 'Visi, Misi & Nilai'],
+        ['struktur-organisasi', 'Struktur Organisasi'],
+        ['penghargaan', 'Penghargaan'],
+        ['kantor', 'Jaringan Kantor'],
     ];
+    $isAboutActive = request()->routeIs('about') || request()->is('tentang-kami*');
 @endphp
 <header class="sticky top-0 z-50 border-b border-line bg-white/95 backdrop-blur-sm">
     <div class="container-page flex h-[72px] items-center justify-between gap-6">
@@ -19,11 +20,45 @@
         </a>
 
         <nav class="hidden items-center gap-7 lg:flex" aria-label="Navigasi utama">
-            @foreach ($links as [$label, $route, $pattern])
-                @php $active = request()->routeIs($route) || request()->is($pattern); @endphp
-                <a href="{{ route($route) }}" @if ($active) aria-current="page" @endif
-                   class="inline-flex min-h-11 items-center border-b-2 px-1 text-sm font-medium transition-colors duration-150 {{ $active ? 'border-accent text-ink' : 'border-transparent text-muted hover:text-ink' }}">{{ $label }}</a>
-            @endforeach
+            <a href="{{ route('home') }}" @if (request()->routeIs('home')) aria-current="page" @endif
+               class="inline-flex min-h-11 items-center border-b-2 px-1 text-sm font-medium transition-colors duration-150 {{ request()->routeIs('home') ? 'border-accent text-ink' : 'border-transparent text-muted hover:text-ink' }}">Beranda</a>
+
+            <a href="{{ route('products.index') }}" @if (request()->routeIs('products.*') || request()->is('produk*')) aria-current="page" @endif
+               class="inline-flex min-h-11 items-center border-b-2 px-1 text-sm font-medium transition-colors duration-150 {{ request()->routeIs('products.*') || request()->is('produk*') ? 'border-accent text-ink' : 'border-transparent text-muted hover:text-ink' }}">Produk</a>
+
+            {{-- Dropdown Tentang Kami --}}
+            <div class="group relative">
+                <a href="{{ route('about', ['bagian' => 'profil']) }}" @if ($isAboutActive) aria-current="page" @endif
+                   class="inline-flex min-h-11 items-center gap-1.5 border-b-2 px-1 text-sm font-medium transition-colors duration-150 {{ $isAboutActive ? 'border-accent text-ink' : 'border-transparent text-muted hover:text-ink' }}">
+                    <span>Tentang Kami</span>
+                    <svg class="h-3.5 w-3.5 transition-transform duration-200 group-hover:rotate-180" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="m6 9 6 6 6-6" />
+                    </svg>
+                </a>
+
+                <div class="invisible absolute left-0 top-full z-50 w-56 pt-2 opacity-0 transition-all duration-150 group-focus-within:visible group-focus-within:opacity-100 group-hover:visible group-hover:opacity-100">
+                    <div class="border border-line border-t-2 border-t-accent bg-white py-1.5 shadow-lg">
+                        @foreach ($aboutMenus as [$secKey, $secLabel])
+                            <a
+                                href="{{ route('about', ['bagian' => $secKey]) }}"
+                                data-about-nav="{{ $secKey }}"
+                                class="block px-4 py-2.5 text-xs font-semibold transition-colors {{ $isAboutActive && request('bagian', 'profil') === $secKey ? 'bg-soft text-brand-dark' : 'text-ink hover:bg-soft hover:text-brand-dark' }}"
+                            >
+                                {{ $secLabel }}
+                            </a>
+                        @endforeach
+                    </div>
+                </div>
+            </div>
+
+            <a href="{{ route('articles.index') }}" @if (request()->routeIs('articles.*') || request()->is('informasi*')) aria-current="page" @endif
+               class="inline-flex min-h-11 items-center border-b-2 px-1 text-sm font-medium transition-colors duration-150 {{ request()->routeIs('articles.*') || request()->is('informasi*') ? 'border-accent text-ink' : 'border-transparent text-muted hover:text-ink' }}">Informasi</a>
+
+            <a href="{{ route('reports.index') }}" @if (request()->routeIs('reports.*') || request()->is('laporan-keuangan*')) aria-current="page" @endif
+               class="inline-flex min-h-11 items-center border-b-2 px-1 text-sm font-medium transition-colors duration-150 {{ request()->routeIs('reports.*') || request()->is('laporan-keuangan*') ? 'border-accent text-ink' : 'border-transparent text-muted hover:text-ink' }}">Laporan Keuangan</a>
+
+            <a href="{{ route('contact') }}" @if (request()->routeIs('contact') || request()->is('kontak*')) aria-current="page" @endif
+               class="inline-flex min-h-11 items-center border-b-2 px-1 text-sm font-medium transition-colors duration-150 {{ request()->routeIs('contact') || request()->is('kontak*') ? 'border-accent text-ink' : 'border-transparent text-muted hover:text-ink' }}">Kontak</a>
         </nav>
 
         <div class="flex items-center gap-3">
@@ -37,9 +72,28 @@
 
     <div id="menu-mobile" data-nav-panel class="hidden border-t border-line bg-white lg:hidden">
         <nav class="container-page flex flex-col py-2" aria-label="Navigasi seluler">
-            @foreach ($links as [$label, $route, $pattern])
-                <a href="{{ route($route) }}" class="border-b border-line py-3.5 text-base font-medium text-ink last:border-0">{{ $label }}</a>
-            @endforeach
+            <a href="{{ route('home') }}" class="border-b border-line py-3.5 text-base font-medium text-ink">Beranda</a>
+            <a href="{{ route('products.index') }}" class="border-b border-line py-3.5 text-base font-medium text-ink">Produk</a>
+
+            <details class="border-b border-line py-2">
+                <summary class="flex cursor-pointer list-none items-center justify-between py-1.5 text-base font-medium text-ink marker:hidden [&::-webkit-details-marker]:hidden">
+                    <span>Tentang Kami</span>
+                    <svg class="h-4 w-4 text-muted" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="m6 9 6 6 6-6" />
+                    </svg>
+                </summary>
+                <div class="mt-1 flex flex-col border-l-2 border-brand pl-4 pb-2">
+                    @foreach ($aboutMenus as [$secKey, $secLabel])
+                        <a href="{{ route('about', ['bagian' => $secKey]) }}" data-about-nav="{{ $secKey }}" class="py-2 text-sm font-medium text-muted hover:text-brand-dark">
+                            {{ $secLabel }}
+                        </a>
+                    @endforeach
+                </div>
+            </details>
+
+            <a href="{{ route('articles.index') }}" class="border-b border-line py-3.5 text-base font-medium text-ink">Informasi</a>
+            <a href="{{ route('reports.index') }}" class="border-b border-line py-3.5 text-base font-medium text-ink">Laporan Keuangan</a>
+            <a href="{{ route('contact') }}" class="border-b border-line py-3.5 text-base font-medium text-ink">Kontak</a>
             <x-button :href="route('contact')" class="my-4">Hubungi Kami</x-button>
         </nav>
     </div>

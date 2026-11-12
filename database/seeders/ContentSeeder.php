@@ -51,6 +51,8 @@ class ContentSeeder extends Seeder
 
         $this->banners();
         $this->promos();
+        $this->orgChart();
+        $this->awards();
         $this->products();
         $this->articles();
         $this->testimonials();
@@ -66,8 +68,14 @@ class ContentSeeder extends Seeder
 
         OrganizationalStructure::query()->delete();
         foreach ([
-            ['Komisaris Utama', 'komisaris'], ['Komisaris', 'komisaris'],
-            ['Direktur Utama', 'direksi'], ['Direktur', 'direksi'],
+            ['Komisaris Utama', 'komisaris'],
+            ['Komisaris', 'komisaris'],
+            ['Direktur Utama', 'direksi'],
+            ['Direktur Operasional & Kepatuhan', 'direksi'],
+            ['Pejabat Eksekutif Audit Intern', 'pejabat'],
+            ['Pejabat Eksekutif Kepatuhan & Risiko', 'pejabat'],
+            ['Kabag Kredit & Pemasaran', 'pejabat'],
+            ['Kabag Operasional & Pelayanan', 'pejabat'],
         ] as $i => [$position, $group]) {
             OrganizationalStructure::create([
                 'name' => '[Nama '.$position.']', 'position' => $position, 'group' => $group, 'sort_order' => $i,
@@ -88,24 +96,24 @@ class ContentSeeder extends Seeder
             ['tabungan', 'Tabungan Umum', 'Simpanan harian untuk menyimpan dana dengan aman dan mudah diakses.', '/images/banners/tabungan-umum.jpg', true,
                 ['Admin rendah', 'Bunga menarik', 'Setoran awal rendah'],
                 ['Fotokopi KTP', 'NPWP (jika ada)', 'Setoran awal sesuai ketentuan']],
-            ['tabungan', 'Tabungan Pegawai', 'Tabungan untuk mengamankan gaji bulanan pegawai. [Ketentuan lengkap diisi admin.]', '/images/banners/tabungan-pegawai.jpg', false,
-                ['Cocok untuk menyimpan gaji bulanan', 'Dijamin sesuai ketentuan LPS yang berlaku'], ['Fotokopi KTP', '[Persyaratan tambahan diisi admin]']],
-            ['tabungan', 'Tabungan Pelajar', 'Tabungan untuk pelajar agar terbiasa menyisihkan uang jajan. [Ketentuan lengkap diisi admin.]', '/images/banners/tabungan-pelajar.jpg', false,
-                ['Membiasakan menabung sejak dini', 'Dijamin sesuai ketentuan LPS yang berlaku'], ['[Persyaratan diisi admin]']],
-            ['tabungan', 'Tabungan Berencana', 'Simpanan terencana untuk tujuan tertentu seperti pendidikan atau ibadah.', null, false,
+            ['tabungan', 'Tabungan Pegawai', 'Tabungan praktis untuk mengamankan gaji bulanan pegawai.', '/images/banners/tabungan-pegawai.jpg', true,
+                ['Cocok untuk menyimpan gaji bulanan', 'Dijamin sesuai ketentuan LPS'], ['Fotokopi KTP', 'Surat keterangan kerja / instansi']],
+            ['tabungan', 'Tabungan Pelajar', 'Tabungan untuk pelajar agar terbiasa menyisihkan uang jajan sejak dini.', '/images/banners/tabungan-pelajar.jpg', true,
+                ['Setoran ringan untuk pelajar', 'Membiasakan menabung sejak dini'], ['Kartu Pelajar / KIA', 'KTP Orang Tua / Wali']],
+            ['tabungan', 'Tabungan Berencana', 'Simpanan terencana untuk tujuan masa depan seperti pendidikan atau ibadah.', '/images/demo/saving-family.jpg', false,
                 ['Setoran rutin sesuai rencana', 'Membantu disiplin menabung'], ['Fotokopi KTP', 'Setoran awal sesuai ketentuan']],
-            ['kredit', 'Kredit Modal Kerja', 'Pembiayaan untuk kebutuhan operasional dan perputaran usaha.', '/images/demo/stall.jpg', true,
-                ['Disesuaikan dengan arus kas usaha', 'Proses survei oleh petugas'], ['KTP pemohon', 'Bukti usaha', 'Agunan sesuai ketentuan']],
-            ['kredit', 'Kredit Investasi', 'Pembiayaan untuk pengadaan aset usaha jangka menengah dan panjang.', null, false,
-                ['Tenor menyesuaikan jenis investasi'], ['KTP pemohon', 'Rencana investasi', 'Agunan sesuai ketentuan']],
-            ['kredit', 'Kredit Konsumtif', 'Pembiayaan untuk kebutuhan konsumsi dan keperluan pribadi.', null, false,
-                ['Angsuran tetap setiap bulan'], ['KTP pemohon', 'Bukti penghasilan']],
-            ['kredit', 'Kredit Kendaraan', 'Pembiayaan pembelian kendaraan bermotor.', null, false,
-                ['Kendaraan menjadi jaminan sesuai ketentuan'], ['KTP pemohon', 'Bukti penghasilan', 'Dokumen kendaraan']],
-            ['kredit', 'Kredit Multiguna', 'Pembiayaan serbaguna untuk berbagai kebutuhan.', null, false,
-                ['Penggunaan dana fleksibel'], ['KTP pemohon', 'Bukti penghasilan', 'Agunan sesuai ketentuan']],
-            ['deposito', 'Deposito Berjangka', 'Penempatan dana berjangka dengan pilihan jangka waktu.', '/images/demo/market.jpg', true,
-                ['Pilihan jangka waktu', 'Bunga sesuai ketentuan yang berlaku'], ['Fotokopi KTP', 'NPWP', 'Penempatan sesuai minimal yang ditetapkan']],
+            ['kredit', 'Kredit Modal Kerja', 'Tambahan modal untuk kebutuhan operasional dan perputaran usaha.', '/images/demo/stall.jpg', true,
+                ['Disesuaikan dengan arus kas usaha', 'Proses survei dibantu petugas'], ['Fotokopi KTP', 'Bukti usaha berjalan', 'Agunan sesuai ketentuan']],
+            ['kredit', 'Kredit Investasi', 'Pembiayaan pengadaan tempat usaha atau peralatan jangka menengah-panjang.', '/images/demo/sme-shop.jpg', true,
+                ['Tenor menyesuaikan rencana usaha', 'Angsuran terukur'], ['Fotokopi KTP', 'Rencana investasi usaha', 'Agunan sesuai ketentuan']],
+            ['kredit', 'Kredit Konsumtif', 'Pembiayaan untuk berbagai kebutuhan pribadi dan keluarga.', '/images/demo/hero-consult.jpg', false,
+                ['Angsuran tetap setiap bulan', 'Persyaratan mudah'], ['Fotokopi KTP & KK', 'Slip gaji / bukti penghasilan']],
+            ['kredit', 'Kredit Kendaraan', 'Pembiayaan pembelian kendaraan bermotor untuk usaha maupun pribadi.', '/images/demo/hero-business.jpg', false,
+                ['Tenor fleksibel', 'Proses cepat dan transparan'], ['Fotokopi KTP', 'Bukti penghasilan', 'Dokumen kendaraan']],
+            ['kredit', 'Kredit Multiguna', 'Pembiayaan serbaguna untuk renovasi rumah, pendidikan, atau kebutuhan lainnya.', '/images/demo/vendor.jpg', false,
+                ['Penggunaan dana fleksibel', 'Didampingi petugas resmi'], ['Fotokopi KTP & KK', 'Bukti penghasilan', 'Agunan sesuai ketentuan']],
+            ['deposito', 'Deposito Berjangka', 'Penempatan dana berjangka dengan pilihan tenor 1, 3, 6, hingga 12 bulan.', '/images/demo/market.jpg', true,
+                ['Pilihan tenor fleksibel', 'Bunga kompetitif & dijamin LPS'], ['Fotokopi KTP', 'NPWP (jika ada)', 'Penempatan dana sesuai minimal']],
         ];
 
         foreach ($items as $i => [$type, $name, $summary, $image, $featured, $benefits, $requirements]) {
@@ -173,6 +181,41 @@ class ContentSeeder extends Seeder
             Media::create([
                 'collection' => 'banner', 'title' => $title, 'caption' => $caption, 'path' => $path,
                 'mime_type' => 'image/jpeg', 'link_url' => $link, 'link_label' => $label, 'sort_order' => $i,
+            ]);
+        }
+    }
+
+    private function orgChart(): void
+    {
+        Media::query()->where('collection', 'org_chart')->delete();
+
+        Media::create([
+            'collection' => 'org_chart',
+            'title' => 'Struktur Organisasi PT BPR Arta Gandhita',
+            'caption' => 'Bagan struktur organisasi resmi perusahaan.',
+            'path' => '/images/struktur-organisasi.png',
+            'mime_type' => 'image/png',
+            'sort_order' => 1,
+        ]);
+    }
+
+    private function awards(): void
+    {
+        Media::query()->where('collection', 'award')->delete();
+
+        foreach ([
+            ['Predikat "Sangat Bagus" Kinerja Keuangan BPR [Contoh]', '2025 · Infobank Award', 'Penghargaan atas kinerja pertumbuhan aset dan kesehatan keuangan BPR. [Sesuaikan dengan piagam resmi di Admin]', '/images/awards/award-1.png'],
+            ['BPR Terbaik Kategori Aset & Pelayanan UMKM [Contoh]', '2024 · Perbarindo Daerah', 'Apresiasi atas dedikasi penyaluran pembiayaan bagi pelaku usaha mikro dan kecil di daerah.', '/images/awards/award-2.png'],
+            ['Penghargaan Kepatuhan & Tata Kelola BPR [Contoh]', '2023 · Lembaga Keuangan', 'Komitmen penerapan prinsip tata kelola perusahaan yang baik dan transparan.', '/images/awards/award-3.png'],
+        ] as $i => [$title, $issuerYear, $caption, $path]) {
+            Media::create([
+                'collection' => 'award',
+                'title' => $title,
+                'link_label' => $issuerYear,
+                'caption' => $caption,
+                'path' => $path,
+                'mime_type' => 'image/png',
+                'sort_order' => $i + 1,
             ]);
         }
     }

@@ -40,51 +40,53 @@
         @endif
     </section>
 
-    {{-- 2. PRODUK DAN LAYANAN — satu section: poster produk (media "promo") + indeks kategori --}}
-    <section class="py-16 lg:py-24">
+    {{-- 2. PRODUK DAN LAYANAN — simpel, satu grid dengan filter kategori --}}
+    <section class="py-16 lg:py-24" data-tabs>
         <div class="container-page">
-            <div class="reveal flex flex-wrap items-end justify-between gap-5">
-                <div class="max-w-2xl">
+            <div class="reveal flex flex-wrap items-end justify-between gap-5 border-b border-line pb-5">
+                <div>
                     <p class="eyebrow">Produk dan layanan</p>
-                    <h2 class="mt-2 text-2xl font-bold sm:text-3xl">Tiga kebutuhan utama, satu tempat yang sama.</h2>
+                    <h2 class="mt-2 text-2xl font-bold sm:text-3xl">Pilihan produk kami</h2>
                 </div>
-                <a href="{{ route('products.index') }}" class="link-arrow">Semua produk <x-icon name="arrow-right" /></a>
+                <div class="flex flex-wrap items-center gap-2" role="group" aria-label="Filter kategori produk">
+                    <button type="button" data-filter="all" aria-pressed="true" class="tab-chip">Semua</button>
+                    @foreach ($productTypes as $type)
+                        <button type="button" data-filter="{{ $type->value }}" aria-pressed="false" class="tab-chip">{{ $type->label() }}</button>
+                    @endforeach
+                    <a href="{{ route('products.index') }}" class="link-arrow ml-2">Lihat semua <x-icon name="arrow-right" /></a>
+                </div>
             </div>
 
-            @if ($promos->isNotEmpty())
-                <div data-stagger="110" class="mt-10 grid gap-8 md:grid-cols-3">
-                    @foreach ($promos as $promo)
-                        <a href="{{ url($promo->link_url ?: route('products.index', absolute: false)) }}" class="reveal group block">
-                            <div class="overflow-hidden border border-line bg-white">
-                                <img src="{{ $promo->url }}" alt="{{ $promo->title }}" width="800" height="531" loading="lazy" class="aspect-[800/531] w-full object-cover transition-transform duration-500 group-hover:scale-[1.03]">
+            <div data-stagger="90" class="mt-10 grid gap-8 sm:grid-cols-2 lg:grid-cols-3">
+                @foreach ($products->where('is_featured', true) as $product)
+                    <a
+                        href="{{ route('products.show', $product) }}"
+                        data-category="{{ $product->type->value }}"
+                        class="reveal group flex flex-col border border-line bg-white transition-colors duration-200 hover:border-brand"
+                    >
+                        @if ($product->image_url)
+                            <div class="overflow-hidden border-b border-line bg-soft">
+                                <img
+                                    src="{{ $product->image_url }}"
+                                    alt="{{ $product->name }}"
+                                    width="800"
+                                    height="531"
+                                    loading="lazy"
+                                    class="aspect-[800/531] w-full object-cover transition-transform duration-500 group-hover:scale-[1.03]"
+                                >
                             </div>
-                            <div class="mt-4 flex items-start justify-between gap-4">
-                                <div>
-                                    <h3 class="text-base font-bold text-ink transition-colors duration-200 group-hover:text-brand-dark">{{ $promo->title }}</h3>
-                                    <p class="mt-1 text-xs leading-relaxed text-muted">{{ $promo->caption }}</p>
-                                </div>
-                                <x-icon name="arrow-up-right" class="mt-1 h-4 w-4 shrink-0 text-muted transition-transform duration-200 group-hover:-translate-y-0.5 group-hover:translate-x-0.5 group-hover:text-accent" />
+                        @endif
+                        <div class="flex flex-1 flex-col justify-between p-5">
+                            <div>
+                                <span class="text-[11px] font-bold uppercase tracking-[0.12em] text-brand-dark">{{ $product->type->label() }}</span>
+                                <h3 class="mt-1 text-lg font-bold text-ink transition-colors group-hover:text-brand-dark">{{ $product->name }}</h3>
+                                <p class="mt-1.5 text-xs leading-relaxed text-muted">{{ $product->summary }}</p>
                             </div>
-                        </a>
-                    @endforeach
-                </div>
-            @endif
-
-            <div data-stagger="110" class="mt-14 grid divide-y divide-line border-y-2 border-ink md:grid-cols-3 md:divide-x md:divide-y-0">
-                @foreach ($productGroups as $type => $items)
-                    @php $enum = \App\Enums\ProductType::from($type); @endphp
-                    <div class="reveal py-8 md:px-8 md:first:pl-0 md:last:pr-0">
-                        <h3 class="text-xl font-bold">{{ $enum->label() }}</h3>
-                        <p class="mt-1 text-sm text-muted">{{ $enum->tagline() }}</p>
-                        <ul class="mt-4 text-sm">
-                            @foreach ($items as $product)
-                                <li>
-                                    <a href="{{ route('products.show', $product) }}" class="inline-flex min-h-11 items-center font-semibold text-ink underline decoration-transparent decoration-2 underline-offset-4 transition-colors duration-150 hover:text-brand-dark hover:decoration-accent">{{ $product->name }}</a>
-                                </li>
-                            @endforeach
-                        </ul>
-                        <a href="{{ route('products.index', ['jenis' => $type]) }}" class="link-arrow mt-3">Semua {{ strtolower($enum->label()) }} <x-icon name="arrow-right" /></a>
-                    </div>
+                            <span class="mt-4 inline-flex items-center gap-1.5 text-xs font-semibold text-ink group-hover:text-brand-dark">
+                                Lihat detail <x-icon name="arrow-right" class="h-3.5 w-3.5 transition-transform group-hover:translate-x-1" />
+                            </span>
+                        </div>
+                    </a>
                 @endforeach
             </div>
         </div>
@@ -339,7 +341,7 @@
         </section>
     @endif
 
-    {{-- 6b. FAQ + LOKASI --}}
+    {{-- 6c. FAQ + LOKASI --}}
     <section class="py-16 lg:py-24">
         <div class="container-page grid gap-14 lg:grid-cols-12 lg:gap-20">
             <div class="reveal lg:col-span-7">

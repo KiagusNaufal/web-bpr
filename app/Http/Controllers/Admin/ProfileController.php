@@ -20,6 +20,8 @@ class ProfileController extends Controller
     {
         return view('admin.profile.edit', [
             'profile' => CompanyProfile::current(),
+            'orgChart' => Media::where('collection', 'org_chart')->latest('id')->first(),
+            'awards' => Media::where('collection', 'award')->orderBy('sort_order')->get(),
             'structures' => OrganizationalStructure::orderBy('group')->orderBy('sort_order')->get(),
             'branches' => Branch::orderBy('sort_order')->get(),
             'testimonials' => Testimonial::orderBy('sort_order')->get(),
@@ -41,6 +43,9 @@ class ProfileController extends Controller
             'phone' => ['nullable', 'string', 'max:40'],
             'email' => ['nullable', 'email', 'max:140'],
             'whatsapp' => ['nullable', 'string', 'max:25'],
+            'facebook_url' => ['nullable', 'url', 'max:255'],
+            'instagram_url' => ['nullable', 'url', 'max:255'],
+            'tiktok_url' => ['nullable', 'url', 'max:255'],
             'operating_hours' => ['nullable', 'string', 'max:140'],
             'maps_embed_url' => ['nullable', 'string'],
             'logo' => ['nullable', 'image', 'max:2048'],
@@ -68,6 +73,9 @@ class ProfileController extends Controller
             'phone' => $validated['phone'] ?? null,
             'email' => $validated['email'] ?? null,
             'whatsapp' => $validated['whatsapp'] ?? null,
+            'facebook_url' => $validated['facebook_url'] ?? null,
+            'instagram_url' => $validated['instagram_url'] ?? null,
+            'tiktok_url' => $validated['tiktok_url'] ?? null,
             'operating_hours' => $validated['operating_hours'] ?? null,
             'maps_embed_url' => $rawMap !== '' ? $rawMap : null,
         ];
@@ -132,14 +140,14 @@ class ProfileController extends Controller
 
         Branch::create($validated + ['is_active' => true, 'sort_order' => Branch::count() + 1]);
 
-        return redirect()->to(route('admin.profile.edit').'#kantor')->with('success', 'Data kantor berhasil ditambahkan.');
+        return redirect()->route('admin.profile.edit', ['tab' => 'kantor'])->with('success', 'Data kantor berhasil ditambahkan.');
     }
 
     public function destroyBranch(Branch $branch): RedirectResponse
     {
         $branch->delete();
 
-        return redirect()->to(route('admin.profile.edit').'#kantor')->with('success', 'Data kantor berhasil dihapus.');
+        return redirect()->route('admin.profile.edit', ['tab' => 'kantor'])->with('success', 'Data kantor berhasil dihapus.');
     }
 
     public function storeTestimonial(Request $request): RedirectResponse
@@ -165,29 +173,33 @@ class ProfileController extends Controller
             'sort_order' => Testimonial::count() + 1,
         ]);
 
-        return redirect()->to(route('admin.profile.edit').'#testimoni')->with('success', 'Testimoni nasabah berhasil ditambahkan.');
+        return redirect()->route('admin.profile.edit', ['tab' => 'testimoni'])->with('success', 'Testimoni nasabah berhasil ditambahkan.');
     }
 
     public function destroyTestimonial(Testimonial $testimonial): RedirectResponse
     {
         $testimonial->delete();
 
-        return redirect()->to(route('admin.profile.edit').'#testimoni')->with('success', 'Testimoni berhasil dihapus.');
+        return redirect()->route('admin.profile.edit', ['tab' => 'testimoni'])->with('success', 'Testimoni berhasil dihapus.');
     }
 
     public function storeMedia(Request $request): RedirectResponse
     {
         $validated = $request->validate([
-            'collection' => ['required', 'in:banner,promo'],
+            'collection' => ['required', 'in:banner,promo,org_chart,award'],
             'title' => ['required', 'string', 'max:160'],
             'caption' => ['nullable', 'string', 'max:255'],
             'link_url' => ['nullable', 'string', 'max:255'],
             'link_label' => ['nullable', 'string', 'max:60'],
-            'image' => ['required', 'image', 'max:4096'],
+            'image' => ['required', 'image', 'max:6144'],
         ]);
 
         $file = $request->file('image');
         $path = $file->store('banners', 'public');
+
+        if ($validated['collection'] === 'org_chart') {
+            Media::where('collection', 'org_chart')->delete();
+        }
 
         Media::create([
             'collection' => $validated['collection'],
@@ -202,13 +214,20 @@ class ProfileController extends Controller
             'uploaded_by' => $request->user()?->id,
         ]);
 
-        return redirect()->to(route('admin.profile.edit').'#media')->with('success', 'Media banner/poster berhasil ditambahkan.');
+        $tab = match ($validated['collection']) {
+            'org_chart' => 'pengurus',
+            'award' => 'penghargaan',
+            default => 'media',
+        };
+
+        return redirect()->route('admin.profile.edit', ['tab' => $tab])->with('success', 'Gambar berhasil disimpan.');
     }
 
     public function destroyMedia(Media $media): RedirectResponse
     {
+        $tab = $media->collection === 'award' ? 'penghargaan' : 'media';
         $media->delete();
 
-        return redirect()->to(route('admin.profile.edit').'#media')->with('success', 'Media berhasil dihapus.');
+        return redirect()->route('admin.profile.edit', ['tab' => $tab])->with('success', 'Media berhasil dihapus.');
     }
 }

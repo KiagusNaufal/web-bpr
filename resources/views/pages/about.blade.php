@@ -1,18 +1,31 @@
+@php
+    $sections = [
+        'profil' => 'Profil Perusahaan',
+        'sejarah' => 'Sejarah Perusahaan',
+        'visi-misi' => 'Visi, Misi & Nilai',
+        'struktur-organisasi' => 'Struktur Organisasi',
+        'penghargaan' => 'Penghargaan',
+        'kantor' => 'Jaringan Kantor',
+    ];
+    $currentSection = $activeSection ?? 'profil';
+    $sectionTitle = $sections[$currentSection] ?? 'Profil Perusahaan';
+@endphp
+
 <x-layouts.app
-    title="Tentang Kami"
-    description="Profil perusahaan, sejarah, visi dan misi, nilai-nilai, jajaran pengurus, serta jaringan kantor {{ $profile->name }}."
+    :title="$sectionTitle . ' — Tentang Kami'"
+    description="Profil perusahaan, sejarah, visi dan misi, struktur organisasi, penghargaan, serta jaringan kantor {{ $profile->name }}."
 >
     <x-page-header
         eyebrow="Tentang kami"
         :title="$profile->name"
         :subtitle="$profile->tagline"
-        :breadcrumbs="['Tentang Kami' => null]"
+        :breadcrumbs="['Tentang Kami' => route('about'), $sectionTitle => null]"
     />
 
-    {{-- 1. PROFIL & SEJARAH SINGKAT --}}
-    <section class="py-16 lg:py-24">
+    {{-- 1. PROFIL PERUSAHAAN --}}
+    <section id="profil" data-about-panel="profil" class="{{ $currentSection === 'profil' ? '' : 'hidden' }} py-16 lg:py-24">
         <div class="container-page grid gap-12 lg:grid-cols-12 lg:gap-16">
-            <div class="reveal lg:col-span-6">
+            <div class="lg:col-span-6">
                 <p class="eyebrow">Profil perusahaan</p>
                 <h2 class="mt-2 text-2xl font-bold sm:text-3xl">Hadir melayani masyarakat dan pelaku usaha dengan pendekatan yang dekat.</h2>
                 <div class="mt-5 space-y-4 text-sm leading-relaxed text-ink/90 sm:text-base">
@@ -27,7 +40,7 @@
                 @endif
             </div>
 
-            <div class="reveal lg:col-span-6" style="--reveal-delay: 120ms">
+            <div class="lg:col-span-6">
                 <div class="overflow-hidden border border-line bg-soft">
                     <img
                         src="{{ $profile->hero_image_url ?: '/images/demo/market.jpg' }}"
@@ -38,24 +51,59 @@
                         class="aspect-[16/10] w-full object-cover"
                     >
                 </div>
-
-                @if ($profile->history)
-                    <div class="mt-8 border-t border-line pt-6">
-                        <h3 class="text-xs font-bold uppercase tracking-[0.12em] text-brand-dark">Sejarah Singkat</h3>
-                        <div class="mt-3 space-y-3 text-sm leading-relaxed text-muted">
-                            {!! nl2br(e($profile->history)) !!}
-                        </div>
-                    </div>
-                @endif
             </div>
         </div>
     </section>
 
-    {{-- 2. VISI, MISI, DAN NILAI PERUSAHAAN --}}
-    <section class="border-y border-line bg-soft py-16 lg:py-24">
+    {{-- 2. SEJARAH PERUSAHAAN (Layout lega untuk teks panjang / banyak paragraf) --}}
+    <section id="sejarah" data-about-panel="sejarah" class="{{ $currentSection === 'sejarah' ? '' : 'hidden' }} py-16 lg:py-24">
         <div class="container-page">
             <div class="grid gap-12 lg:grid-cols-12 lg:gap-16">
-                <div class="reveal lg:col-span-5">
+                <div class="lg:col-span-4">
+                    <p class="eyebrow">Perjalanan kami</p>
+                    <h2 class="mt-2 text-2xl font-bold sm:text-3xl">Sejarah Perusahaan</h2>
+                    <p class="mt-3 text-sm leading-relaxed text-muted">
+                        Rekam jejak berdirinya {{ $profile->name }} serta perkembangan layanan kami dari masa ke masa dalam mendampingi masyarakat dan pelaku usaha.
+                    </p>
+
+                    <div class="mt-6 overflow-hidden border border-line bg-soft">
+                        <img
+                            src="{{ $profile->hero_image_url ?: '/images/demo/market.jpg' }}"
+                            alt="{{ $profile->name }}"
+                            width="600"
+                            height="400"
+                            loading="lazy"
+                            class="aspect-[16/10] w-full object-cover"
+                        >
+                    </div>
+                </div>
+
+                <div class="lg:col-span-8">
+                    <div class="border border-line border-t-4 border-t-brand-dark bg-white p-6 sm:p-10">
+                        @php
+                            $historyParagraphs = array_values(array_filter(array_map('trim', preg_split('/\r\n\r\n|\n\n/', (string) $profile->history))));
+                        @endphp
+
+                        @if (! empty($historyParagraphs))
+                            <div class="space-y-5 text-sm leading-relaxed text-ink/90 sm:text-base sm:leading-loose">
+                                @foreach ($historyParagraphs as $para)
+                                    <p>{!! nl2br(e($para)) !!}</p>
+                                @endforeach
+                            </div>
+                        @else
+                            <p class="text-sm text-muted">Sejarah perusahaan akan segera diperbarui oleh admin.</p>
+                        @endif
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    {{-- 3. VISI, MISI, DAN NILAI PERUSAHAAN --}}
+    <section id="visi-misi" data-about-panel="visi-misi" class="{{ $currentSection === 'visi-misi' ? '' : 'hidden' }} py-16 lg:py-24">
+        <div class="container-page">
+            <div class="grid gap-12 lg:grid-cols-12 lg:gap-16">
+                <div class="lg:col-span-5">
                     <p class="eyebrow">Arah perusahaan</p>
                     <h2 class="mt-2 text-2xl font-bold sm:text-3xl">Visi &amp; Misi</h2>
 
@@ -67,7 +115,7 @@
                     </div>
                 </div>
 
-                <div class="reveal lg:col-span-7" style="--reveal-delay: 120ms">
+                <div class="lg:col-span-7">
                     <p class="eyebrow">Langkah nyata</p>
                     <h3 class="mt-2 text-xl font-bold sm:text-2xl">Misi Kami</h3>
 
@@ -87,14 +135,14 @@
             {{-- Nilai-Nilai Perusahaan --}}
             @if (!empty($profile->values))
                 <div class="mt-16 border-t border-line pt-14">
-                    <div class="reveal max-w-2xl">
+                    <div class="max-w-2xl">
                         <p class="eyebrow">Budaya kerja</p>
                         <h2 class="mt-2 text-2xl font-bold sm:text-3xl">Nilai-Nilai Perusahaan</h2>
                     </div>
 
-                    <div data-stagger="100" class="mt-8 grid gap-px border border-line bg-line sm:grid-cols-2 lg:grid-cols-4">
+                    <div class="mt-8 grid gap-px border border-line bg-line sm:grid-cols-2 lg:grid-cols-4">
                         @foreach ($profile->values as $idx => $val)
-                            <div class="reveal bg-white p-6">
+                            <div class="bg-white p-6">
                                 <span class="text-xs font-bold text-accent">{{ sprintf('%02d', $idx + 1) }}</span>
                                 <h3 class="mt-2 text-lg font-bold text-ink">{{ $val['title'] ?? '' }}</h3>
                                 <p class="mt-2 text-sm leading-relaxed text-muted">{{ $val['description'] ?? '' }}</p>
@@ -106,61 +154,72 @@
         </div>
     </section>
 
-    {{-- 3. STRUKTUR ORGANISASI & PENGURUS --}}
-    <section class="py-16 lg:py-24">
+    {{-- 4. STRUKTUR ORGANISASI (Gambar Bagan) --}}
+    <section id="struktur-organisasi" data-about-panel="struktur-organisasi" class="{{ $currentSection === 'struktur-organisasi' ? '' : 'hidden' }} py-16 lg:py-24">
         <div class="container-page">
-            <div class="reveal max-w-2xl">
-                <p class="eyebrow">Tata kelola</p>
-                <h2 class="mt-2 text-2xl font-bold sm:text-3xl">Susunan Pengurus &amp; Struktur Organisasi</h2>
-                <p class="mt-3 text-sm text-muted">Jajaran Dewan Komisaris dan Direksi yang menjalankan fungsi pengawasan serta pengelolaan operasional {{ $profile->name }}.</p>
+            <div class="max-w-2xl">
+                <p class="eyebrow">Tata kelola perusahaan</p>
+                <h2 class="mt-2 text-2xl font-bold sm:text-3xl">Struktur Organisasi</h2>
+                <p class="mt-3 text-sm text-muted">Bagan susunan organisasi {{ $profile->name }}. Klik pada gambar untuk memperbesar tampilan bagan.</p>
             </div>
 
-            <div class="mt-12 space-y-14">
-                @foreach ([
-                    'komisaris' => 'Dewan Komisaris',
-                    'direksi' => 'Direksi',
-                    'pejabat' => 'Pejabat Eksekutif',
-                ] as $groupKey => $groupLabel)
-                    @php
-                        $members = $structures->get($groupKey, collect());
-                    @endphp
-                    @if ($members->isNotEmpty())
-                        <div>
-                            <h3 class="border-b-2 border-ink pb-3 text-lg font-bold uppercase tracking-[0.08em] text-ink">{{ $groupLabel }}</h3>
-                            <div data-stagger="100" class="mt-6 grid gap-8 sm:grid-cols-2 lg:grid-cols-4">
-                                @foreach ($members as $member)
-                                    <article class="reveal border border-line bg-white">
-                                        <div class="aspect-[4/4] w-full overflow-hidden border-b border-line bg-soft">
-                                            @if ($member->photo_url)
-                                                <img src="{{ $member->photo_url }}" alt="{{ $member->name }}" width="320" height="320" loading="lazy" class="h-full w-full object-cover">
-                                            @else
-                                                <div class="flex h-full w-full flex-col items-center justify-center p-6 text-center">
-                                                    <span class="text-xs font-semibold uppercase tracking-[0.12em] text-brand-dark">{{ $member->position }}</span>
-                                                    <span class="mt-1 text-[11px] text-muted">Foto pengurus dikelola melalui admin</span>
-                                                </div>
-                                            @endif
-                                        </div>
-                                        <div class="p-5">
-                                            <p class="text-xs font-semibold uppercase tracking-[0.12em] text-brand-dark">{{ $member->position }}</p>
-                                            <h4 class="mt-1 text-base font-bold text-ink">{{ $member->name }}</h4>
-                                            @if ($member->bio)
-                                                <p class="mt-2 text-xs leading-relaxed text-muted">{{ $member->bio }}</p>
-                                            @endif
-                                        </div>
-                                    </article>
-                                @endforeach
-                            </div>
-                        </div>
-                    @endif
-                @endforeach
+            <div class="mt-8">
+                @include('partials.org-chart', ['orgChart' => $orgChart])
             </div>
         </div>
     </section>
 
-    {{-- 4. JARINGAN KANTOR LAYANAN --}}
-    <section class="border-t border-line bg-soft py-16 lg:py-24">
+    {{-- 5. PENGHARGAAN & APRESIASI --}}
+    <section id="penghargaan" data-about-panel="penghargaan" class="{{ $currentSection === 'penghargaan' ? '' : 'hidden' }} py-16 lg:py-24">
         <div class="container-page">
-            <div class="reveal flex flex-wrap items-end justify-between gap-4">
+            <div class="max-w-2xl">
+                <p class="eyebrow">Rekam jejak &amp; apresiasi</p>
+                <h2 class="mt-2 text-2xl font-bold sm:text-3xl">Penghargaan</h2>
+                <p class="mt-3 text-sm text-muted">Apresiasi dan penghargaan yang diterima {{ $profile->name }} atas komitmen pelayanan, tata kelola, dan kinerja keuangan.</p>
+            </div>
+
+            <div class="mt-10 grid gap-8 sm:grid-cols-2 lg:grid-cols-3">
+                @forelse ($awards as $award)
+                    <article class="flex flex-col border border-line bg-white">
+                        @if ($award->url)
+                            <div class="overflow-hidden border-b border-line bg-soft">
+                                <img
+                                    src="{{ $award->url }}"
+                                    alt="{{ $award->title }}"
+                                    width="600"
+                                    height="400"
+                                    loading="lazy"
+                                    class="aspect-[16/10] w-full object-cover"
+                                >
+                            </div>
+                        @endif
+                        <div class="flex flex-1 flex-col justify-between p-6">
+                            <div>
+                                @if ($award->link_label)
+                                    <span class="inline-block bg-soft px-2.5 py-1 text-[11px] font-bold uppercase tracking-[0.12em] text-brand-dark">
+                                        {{ $award->link_label }}
+                                    </span>
+                                @endif
+                                <h3 class="mt-2.5 text-lg font-bold text-ink">{{ $award->title }}</h3>
+                                @if ($award->caption)
+                                    <p class="mt-2 text-xs leading-relaxed text-muted">{{ $award->caption }}</p>
+                                @endif
+                            </div>
+                        </div>
+                    </article>
+                @empty
+                    <div class="col-span-full border border-line bg-soft p-8 text-center text-sm text-muted">
+                        Belum ada data penghargaan yang diunggah.
+                    </div>
+                @endforelse
+            </div>
+        </div>
+    </section>
+
+    {{-- 6. JARINGAN KANTOR LAYANAN --}}
+    <section id="kantor" data-about-panel="kantor" class="{{ $currentSection === 'kantor' ? '' : 'hidden' }} py-16 lg:py-24">
+        <div class="container-page">
+            <div class="flex flex-wrap items-end justify-between gap-4">
                 <div>
                     <p class="eyebrow">Jaringan layanan</p>
                     <h2 class="mt-2 text-2xl font-bold sm:text-3xl">Kantor Layanan Kami</h2>
@@ -168,9 +227,9 @@
                 <a href="{{ route('contact') }}" class="link-arrow">Hubungi kantor <x-icon name="arrow-right" /></a>
             </div>
 
-            <div data-stagger="100" class="mt-10 grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+            <div class="mt-10 grid gap-6 md:grid-cols-2 lg:grid-cols-3">
                 @forelse ($branches as $branch)
-                    <article class="reveal border border-line bg-white p-6">
+                    <article class="border border-line bg-white p-6">
                         <span class="text-xs font-bold uppercase tracking-[0.12em] text-brand-dark">Kantor {{ ucfirst($branch->type) }}</span>
                         <h3 class="mt-1 text-lg font-bold text-ink">{{ $branch->name }}</h3>
                         <p class="mt-3 text-sm text-muted">{{ $branch->address }}</p>

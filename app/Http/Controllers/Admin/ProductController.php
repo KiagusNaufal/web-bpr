@@ -14,10 +14,36 @@ use Illuminate\View\View;
 
 class ProductController extends Controller
 {
-    public function index(): View
+    public function index(Request $request): View
     {
+        $activeType = ProductType::tryFrom((string) $request->query('type'));
+        $activeStatus = PublishStatus::tryFrom((string) $request->query('status'));
+        $search = trim((string) $request->query('q'));
+
+        $products = Product::query()
+            ->when($activeType, fn ($q) => $q->where('type', $activeType->value))
+            ->when($activeStatus, fn ($q) => $q->where('status', $activeStatus->value))
+            ->when($search !== '', fn ($q) => $q->where(function ($sub) use ($search) {
+                $sub->where('name', 'like', "%{$search}%")
+                    ->orWhere('summary', 'like', "%{$search}%");
+            }))
+            ->orderBy('type')
+            ->orderBy('sort_order')
+            ->get();
+
         return view('admin.products.index', [
-            'products' => Product::orderBy('type')->orderBy('sort_order')->get(),
+            'products' => $products,
+            'types' => ProductType::cases(),
+            'statuses' => PublishStatus::cases(),
+            'activeType' => $activeType,
+            'activeStatus' => $activeStatus,
+            'search' => $search,
+            'counts' => [
+                'all' => Product::count(),
+                'tabungan' => Product::where('type', ProductType::Tabungan)->count(),
+                'kredit' => Product::where('type', ProductType::Kredit)->count(),
+                'deposito' => Product::where('type', ProductType::Deposito)->count(),
+            ],
         ]);
     }
 

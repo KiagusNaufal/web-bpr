@@ -14,11 +14,31 @@ use Illuminate\View\View;
 
 class ArticleController extends Controller
 {
-    public function index(): View
+    public function index(Request $request): View
     {
+        $categoryId = $request->integer('category_id') ?: null;
+        $activeStatus = PublishStatus::tryFrom((string) $request->query('status'));
+        $search = trim((string) $request->query('q'));
+
+        $articles = Article::with(['category', 'author'])
+            ->when($categoryId, fn ($q) => $q->where('category_id', $categoryId))
+            ->when($activeStatus, fn ($q) => $q->where('status', $activeStatus->value))
+            ->when($search !== '', fn ($q) => $q->where(function ($sub) use ($search) {
+                $sub->where('title', 'like', "%{$search}%")
+                    ->orWhere('excerpt', 'like', "%{$search}%");
+            }))
+            ->latest('published_at')
+            ->latest('id')
+            ->paginate(12)
+            ->withQueryString();
+
         return view('admin.articles.index', [
-            'articles' => Article::with(['category', 'author'])->latest('published_at')->latest('id')->paginate(12),
+            'articles' => $articles,
             'categories' => Category::withCount('articles')->orderBy('name')->get(),
+            'statuses' => PublishStatus::cases(),
+            'activeCategoryId' => $categoryId,
+            'activeStatus' => $activeStatus,
+            'search' => $search,
         ]);
     }
 

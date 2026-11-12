@@ -13,10 +13,37 @@ use Illuminate\View\View;
 
 class FinancialReportController extends Controller
 {
-    public function index(): View
+    public function index(Request $request): View
     {
+        $activeType = ReportType::tryFrom((string) $request->query('type'));
+        $activeYear = $request->integer('year') ?: null;
+        $search = trim((string) $request->query('q'));
+
+        $reports = FinancialReport::with('uploader')
+            ->when($activeType, fn ($q) => $q->where('type', $activeType->value))
+            ->when($activeYear, fn ($q) => $q->where('year', $activeYear))
+            ->when($search !== '', fn ($q) => $q->where(function ($sub) use ($search) {
+                $sub->where('title', 'like', "%{$search}%")
+                    ->orWhere('period', 'like', "%{$search}%");
+            }))
+            ->orderByDesc('year')
+            ->orderByDesc('published_at')
+            ->paginate(15)
+            ->withQueryString();
+
+        $years = FinancialReport::query()
+            ->select('year')
+            ->distinct()
+            ->orderByDesc('year')
+            ->pluck('year');
+
         return view('admin.reports.index', [
-            'reports' => FinancialReport::with('uploader')->orderByDesc('year')->orderByDesc('published_at')->paginate(15),
+            'reports' => $reports,
+            'types' => ReportType::cases(),
+            'years' => $years,
+            'activeType' => $activeType,
+            'activeYear' => $activeYear,
+            'search' => $search,
         ]);
     }
 

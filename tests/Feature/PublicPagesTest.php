@@ -57,8 +57,7 @@ class PublicPagesTest extends TestCase
             ->assertOk()
             ->assertSee('Visi')
             ->assertSee('Misi Kami')
-            ->assertSee('Dewan Komisaris')
-            ->assertSee('Direksi');
+            ->assertSee('Struktur Organisasi');
     }
 
     public function test_articles_index_search_and_detail_render(): void
@@ -171,12 +170,16 @@ class PublicPagesTest extends TestCase
 
         // Profile, Testimonials, Structures, Branches
         $this->get(route('admin.profile.edit'))->assertOk();
+        $this->get(route('admin.profile.edit', ['tab' => 'media']))->assertOk();
+        $this->get(route('admin.products.index', ['type' => 'tabungan']))->assertOk();
+        $this->get(route('admin.articles.index', ['status' => 'published']))->assertOk();
+        $this->get(route('admin.reports.index', ['type' => 'publikasi']))->assertOk();
         $this->post(route('admin.profile.testimonials.store'), [
             'name' => 'Pak Hendra',
             'role' => 'Pengusaha Konveksi',
             'quote' => 'Pelayanan cepat dan sangat membantu modal usaha.',
             'status' => 'published',
-        ])->assertRedirect(route('admin.profile.edit').'#testimoni');
+        ])->assertRedirect(route('admin.profile.edit', ['tab' => 'testimoni']));
 
         // Contact Messages Admin
         $msg = ContactMessage::create([

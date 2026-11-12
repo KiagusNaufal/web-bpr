@@ -15,9 +15,16 @@ class ContactMessageController extends Controller
     public function index(Request $request): View
     {
         $status = MessageStatus::tryFrom((string) $request->query('status'));
+        $search = trim((string) $request->query('q'));
 
         $messages = ContactMessage::query()
             ->when($status, fn ($q) => $q->where('status', $status->value))
+            ->when($search !== '', fn ($q) => $q->where(function ($sub) use ($search) {
+                $sub->where('name', 'like', "%{$search}%")
+                    ->orWhere('email', 'like', "%{$search}%")
+                    ->orWhere('subject', 'like', "%{$search}%")
+                    ->orWhere('message', 'like', "%{$search}%");
+            }))
             ->latest()
             ->paginate(15)
             ->withQueryString();
@@ -26,6 +33,7 @@ class ContactMessageController extends Controller
             'messages' => $messages,
             'activeStatus' => $status,
             'statuses' => MessageStatus::cases(),
+            'search' => $search,
         ]);
     }
 
