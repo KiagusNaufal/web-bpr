@@ -5,6 +5,8 @@
         'visi-misi' => 'Visi, Misi & Nilai',
         'struktur-organisasi' => 'Struktur Organisasi',
         'penghargaan' => 'Penghargaan',
+        'galeri' => 'Galeri Kegiatan',
+        'karir' => 'Karir & Lowongan',
         'kantor' => 'Jaringan Kantor',
     ];
     $currentSection = $activeSection ?? 'profil';
@@ -213,6 +215,143 @@
                     </div>
                 @endforelse
             </div>
+        </div>
+    </section>
+
+    {{-- 5B. GALERI DOKUMENTASI KEGIATAN & CSR --}}
+    <section id="galeri" data-about-panel="galeri" class="{{ $currentSection === 'galeri' ? '' : 'hidden' }} py-16 lg:py-24">
+        <div class="container-page">
+            <div class="max-w-2xl">
+                <p class="eyebrow">Dokumentasi perusahaan</p>
+                <h2 class="mt-2 text-2xl font-bold sm:text-3xl">Galeri Kegiatan</h2>
+                <p class="mt-3 text-sm text-muted">Dokumentasi kegiatan pelayanan, edukasi literasi keuangan, kunjungan UMKM, serta program sosial {{ $profile->name }}.</p>
+            </div>
+
+            <div class="mt-10 grid gap-8 sm:grid-cols-2 lg:grid-cols-3">
+                @forelse ($gallery as $photo)
+                    <article class="flex flex-col border border-line bg-white">
+                        @if ($photo->url)
+                            <a href="{{ $photo->url }}" target="_blank" rel="noopener" class="group relative block overflow-hidden border-b border-line bg-soft">
+                                <img
+                                    src="{{ $photo->url }}"
+                                    alt="{{ $photo->title }}"
+                                    width="800"
+                                    height="500"
+                                    loading="lazy"
+                                    class="aspect-[16/10] w-full object-cover transition-transform duration-500 group-hover:scale-105"
+                                >
+                            </a>
+                        @endif
+                        <div class="p-5">
+                            @if ($photo->link_label)
+                                <span class="inline-block bg-soft px-2.5 py-0.5 text-[11px] font-bold uppercase tracking-[0.12em] text-brand-dark">
+                                    {{ $photo->link_label }}
+                                </span>
+                            @endif
+                            <h3 class="mt-2 text-base font-bold text-ink">{{ $photo->title }}</h3>
+                            @if ($photo->caption)
+                                <p class="mt-1.5 text-xs leading-relaxed text-muted">{{ $photo->caption }}</p>
+                            @endif
+                        </div>
+                    </article>
+                @empty
+                    <div class="col-span-full border border-line bg-soft p-8 text-center text-sm text-muted">
+                        Belum ada foto kegiatan yang diunggah.
+                    </div>
+                @endforelse
+            </div>
+        </div>
+    </section>
+
+    {{-- 5C. KARIR & LOWONGAN KERJA --}}
+    <section id="karir" data-about-panel="karir" class="{{ $currentSection === 'karir' ? '' : 'hidden' }}">
+        {{-- Pembuka bergaya poster --}}
+        <div class="relative isolate overflow-hidden bg-brand-deep text-white">
+            <img src="/images/demo/meeting.jpg" alt="" loading="lazy" class="absolute inset-0 -z-10 h-full w-full object-cover opacity-25">
+            <div class="container-page grid items-end gap-10 py-16 lg:grid-cols-12 lg:py-24">
+                <div class="lg:col-span-8">
+                    <p class="text-xs font-semibold uppercase tracking-[0.16em] text-accent">Bergabung bersama kami</p>
+                    <h2 class="mt-4 text-3xl font-extrabold leading-tight !text-white sm:text-5xl">
+                        Tumbuh bersama,<br>
+                        <span class="text-accent">melayani</span> dengan hati.
+                    </h2>
+                    <p class="mt-5 max-w-xl text-sm leading-relaxed text-white/80 sm:text-base">
+                        Di {{ $profile->name }}, setiap orang punya peran nyata dalam membantu pedagang, keluarga, dan pelaku usaha di sekitar kita.
+                    </p>
+                </div>
+                <div class="lg:col-span-4">
+                    <div class="border-l-4 border-accent bg-white/10 p-5 text-sm backdrop-blur-sm">
+                        <p class="font-bold !text-white">{{ $careers->count() }} posisi dibuka</p>
+                        <p class="mt-1 text-xs text-white/75">Tanpa biaya apa pun di seluruh tahapan seleksi.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="container-page grid gap-14 py-16 lg:grid-cols-12 lg:gap-16 lg:py-24">
+            {{-- Daftar posisi: baris yang bisa dibuka --}}
+            <div class="lg:col-span-7">
+                <p class="eyebrow">Posisi terbuka</p>
+                <h3 class="mt-2 text-2xl font-bold sm:text-3xl">Temukan peranmu</h3>
+
+                <div class="mt-8 divide-y divide-line border-y border-line">
+                    @forelse ($careers as $i => $job)
+                        <details class="group py-1" @if ($loop->first) open @endif>
+                            <summary class="flex min-h-11 cursor-pointer list-none items-center gap-5 py-5 marker:hidden [&::-webkit-details-marker]:hidden">
+                                <span class="text-3xl font-extrabold tabular-nums text-line transition-colors group-open:text-accent sm:text-4xl">{{ sprintf('%02d', $i + 1) }}</span>
+                                <span class="flex-1">
+                                    <span class="block text-lg font-bold text-ink transition-colors group-hover:text-brand-dark">{{ $job->title }}</span>
+                                    <span class="mt-0.5 block text-xs font-semibold uppercase tracking-[0.1em] text-brand-dark">{{ $job->link_label ?: 'Penuh Waktu' }}</span>
+                                </span>
+                                <span class="flex h-10 w-10 shrink-0 items-center justify-center border border-line text-lg leading-none text-brand-dark transition-all duration-200 group-open:rotate-45 group-open:border-accent group-open:bg-accent group-open:text-ink" aria-hidden="true">+</span>
+                            </summary>
+                            <div class="pb-6 pl-0 sm:pl-[4.5rem]">
+                                <p class="text-sm leading-relaxed text-muted">{{ $job->caption }}</p>
+                                <a href="mailto:{{ $profile->email }}?subject={{ rawurlencode('Lamaran Kerja - ' . $job->title) }}" class="link-arrow mt-4 text-xs">
+                                    Lamar posisi ini <x-icon name="arrow-right" />
+                                </a>
+                            </div>
+                        </details>
+                    @empty
+                        <p class="py-8 text-sm text-muted">Belum ada lowongan dibuka saat ini. Pantau halaman ini untuk informasi rekrutmen resmi.</p>
+                    @endforelse
+                </div>
+            </div>
+
+            {{-- Alasan bergabung & tahapan seleksi --}}
+            <aside class="space-y-12 lg:col-span-5">
+                <div>
+                    <p class="eyebrow">Kenapa bergabung</p>
+                    <ul class="mt-4 space-y-4">
+                        @foreach ([
+                            ['Belajar langsung di lapangan', 'Mendampingi pelaku usaha nyata, bukan sekadar di balik meja.'],
+                            ['Lingkungan kerja yang suportif', 'Tim kecil yang saling mengenal dan saling membantu.'],
+                            ['Jenjang karier yang jelas', 'Kesempatan berkembang seiring kinerja dan kompetensi.'],
+                        ] as [$t, $d])
+                            <li class="flex gap-4">
+                                <span class="mt-1.5 h-2 w-2 shrink-0 bg-accent"></span>
+                                <span><strong class="block text-sm text-ink">{{ $t }}</strong><span class="text-xs text-muted">{{ $d }}</span></span>
+                            </li>
+                        @endforeach
+                    </ul>
+                </div>
+
+                <div>
+                    <p class="eyebrow">Tahapan seleksi</p>
+                    <ol class="mt-4 space-y-0">
+                        @foreach (['Kirim CV & surat lamaran', 'Seleksi berkas', 'Wawancara', 'Pengumuman'] as $n => $step)
+                            <li class="relative flex items-center gap-4 pb-6 last:pb-0">
+                                @unless ($loop->last)
+                                    <span class="absolute left-[15px] top-8 h-full w-px bg-line" aria-hidden="true"></span>
+                                @endunless
+                                <span class="relative flex h-8 w-8 shrink-0 items-center justify-center border-2 border-brand-dark bg-white text-xs font-bold text-brand-dark">{{ $n + 1 }}</span>
+                                <span class="text-sm font-semibold text-ink">{{ $step }}</span>
+                            </li>
+                        @endforeach
+                    </ol>
+                    <p class="mt-5 text-xs text-muted">Kirim lamaran ke <strong class="text-ink">{{ $profile->email }}</strong></p>
+                </div>
+            </aside>
         </div>
     </section>
 

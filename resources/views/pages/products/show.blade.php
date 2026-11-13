@@ -67,8 +67,8 @@
                     <a href="{{ route('products.index') }}" class="link-arrow text-xs">
                         <x-icon name="chevron-left" /> Kembali ke semua produk
                     </a>
-                    <x-button :href="route('contact', ['subjek' => 'Konsultasi '.$product->name])" icon="arrow-right">
-                        Tanya / Ajukan Produk Ini
+                    <x-button :href="route('application', ['produk' => $product->name])" icon="arrow-right">
+                        Ajukan Produk Ini Secara Online
                     </x-button>
                 </div>
             </div>

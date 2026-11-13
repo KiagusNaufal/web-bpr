@@ -1,6 +1,6 @@
 @php
     $activeTab = request('tab', 'profil');
-    if (! in_array($activeTab, ['profil', 'media', 'pengurus', 'penghargaan', 'testimoni', 'kantor'], true)) {
+    if (! in_array($activeTab, ['profil', 'media', 'pengurus', 'penghargaan', 'galeri', 'agunan', 'karir', 'testimoni', 'kantor'], true)) {
         $activeTab = 'profil';
     }
 @endphp
@@ -14,6 +14,9 @@
                 ['media', 'image', 'Banner & Poster (' . $banners->count() . ')'],
                 ['pengurus', 'network', 'Struktur Organisasi'],
                 ['penghargaan', 'check', 'Penghargaan (' . ($awards ?? collect())->count() . ')'],
+                ['galeri', 'image', 'Galeri (' . ($galleries ?? collect())->count() . ')'],
+                ['agunan', 'landmark', 'Lelang Agunan (' . ($collaterals ?? collect())->count() . ')'],
+                ['karir', 'users', 'Karir (' . ($careers ?? collect())->count() . ')'],
                 ['testimoni', 'message-square-quote', 'Testimoni (' . $testimonials->count() . ')'],
                 ['kantor', 'map-pin', 'Jaringan Kantor (' . $branches->count() . ')'],
             ] as [$tabKey, $tabIcon, $tabLabel])
@@ -132,9 +135,15 @@
                             <textarea id="missions_text" name="missions_text" rows="3" class="field">{{ old('missions_text', implode("\n", $profile->missions ?? [])) }}</textarea>
                         </div>
                     </div>
-                    <div class="mt-4">
-                        <label for="license_info" class="mb-1.5 block text-xs font-bold uppercase tracking-[0.1em] text-ink">Keterangan Izin &amp; Pengawasan (OJK &amp; LPS)</label>
-                        <input id="license_info" type="text" name="license_info" value="{{ old('license_info', $profile->license_info) }}" class="field">
+                    <div class="mt-4 grid gap-5 sm:grid-cols-3">
+                        <div class="sm:col-span-2">
+                            <label for="license_info" class="mb-1.5 block text-xs font-bold uppercase tracking-[0.1em] text-ink">Keterangan Izin &amp; Pengawasan (OJK &amp; LPS)</label>
+                            <input id="license_info" type="text" name="license_info" value="{{ old('license_info', $profile->license_info) }}" class="field">
+                        </div>
+                        <div>
+                            <label for="lps_rate" class="mb-1.5 block text-xs font-bold uppercase tracking-[0.1em] text-ink">Tingkat Bunga Penjaminan LPS</label>
+                            <input id="lps_rate" type="text" name="lps_rate" value="{{ old('lps_rate', $profile->lps_rate ?: '6,75%') }}" placeholder="6,75%" class="field">
+                        </div>
                     </div>
                 </div>
 
@@ -304,6 +313,163 @@
                                 <button type="submit" class="cursor-pointer text-xs font-semibold text-red-600 hover:underline">Hapus</button>
                             </form>
                         </div>
+                    </div>
+                @endforeach
+            </div>
+        </section>
+
+        {{-- TAB 3C: GALERI DOKUMENTASI KEGIATAN --}}
+        <section id="galeri" data-admin-tab-panel="galeri" class="{{ $activeTab === 'galeri' ? '' : 'hidden' }} border border-line bg-white p-6 sm:p-8">
+            <div class="border-b border-line pb-4">
+                <h2 class="text-lg font-bold text-ink">Galeri Dokumentasi Kegiatan &amp; CSR</h2>
+                <p class="mt-1 text-xs text-muted">Unggah foto kegiatan BPR untuk ditampilkan pada menu Tentang Kami &rarr; Galeri Kegiatan.</p>
+            </div>
+
+            <form action="{{ route('admin.profile.media.store') }}" method="POST" enctype="multipart/form-data" class="mt-6 grid gap-4 border border-line bg-soft p-5 sm:grid-cols-12">
+                @csrf
+                <input type="hidden" name="collection" value="gallery">
+                <div class="sm:col-span-5">
+                    <label class="mb-1 block text-xs font-bold uppercase text-ink">Judul Kegiatan *</label>
+                    <input type="text" name="title" required placeholder="Mis. Kunjungan Pelaku UMKM Pasar" class="field">
+                </div>
+                <div class="sm:col-span-3">
+                    <label class="mb-1 block text-xs font-bold uppercase text-ink">Kategori / Label</label>
+                    <input type="text" name="link_label" placeholder="Mis. Kegiatan Lapangan" class="field">
+                </div>
+                <div class="sm:col-span-4">
+                    <label class="mb-1 block text-xs font-bold uppercase text-ink">Foto Kegiatan *</label>
+                    <input type="file" name="image" accept="image/*" required class="field text-xs">
+                </div>
+                <div class="sm:col-span-9">
+                    <label class="mb-1 block text-xs font-bold uppercase text-ink">Keterangan Singkat</label>
+                    <input type="text" name="caption" placeholder="Deskripsi singkat kegiatan..." class="field">
+                </div>
+                <div class="sm:col-span-3 sm:self-end">
+                    <x-button type="submit" variant="brand" class="w-full">Tambah Foto Galeri</x-button>
+                </div>
+            </form>
+
+            <div class="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                @foreach ($galleries ?? [] as $photo)
+                    <div class="border border-line p-3">
+                        <img src="{{ $photo->url }}" alt="{{ $photo->title }}" class="aspect-[16/10] w-full object-cover">
+                        <div class="mt-3 flex items-start justify-between gap-2">
+                            <div>
+                                @if ($photo->link_label)
+                                    <span class="inline-block bg-soft px-2 py-0.5 text-[10px] font-bold uppercase tracking-[0.1em] text-brand-dark">{{ $photo->link_label }}</span>
+                                @endif
+                                <p class="mt-1 text-sm font-bold text-ink">{{ $photo->title }}</p>
+                                @if ($photo->caption)
+                                    <p class="mt-1 text-xs text-muted">{{ $photo->caption }}</p>
+                                @endif
+                            </div>
+                            <form action="{{ route('admin.profile.media.destroy', $photo) }}" method="POST">
+                                @csrf
+                                @method('DELETE')
+                                <button type="submit" class="cursor-pointer text-xs font-semibold text-red-600 hover:underline">Hapus</button>
+                            </form>
+                        </div>
+                    </div>
+                @endforeach
+            </div>
+        </section>
+
+        {{-- TAB 3D: INFO LELANG & JUAL ASET AGUNAN --}}
+        <section id="agunan" data-admin-tab-panel="agunan" class="{{ $activeTab === 'agunan' ? '' : 'hidden' }} border border-line bg-white p-6 sm:p-8">
+            <div class="border-b border-line pb-4">
+                <h2 class="text-lg font-bold text-ink">Info Lelang &amp; Penjualan Aset Agunan</h2>
+                <p class="mt-1 text-xs text-muted">Kelola daftar properti, tanah, atau kendaraan agunan yang dipasarkan di halaman Info Lelang &amp; Agunan.</p>
+            </div>
+
+            <form action="{{ route('admin.profile.media.store') }}" method="POST" enctype="multipart/form-data" class="mt-6 grid gap-4 border border-line bg-soft p-5 sm:grid-cols-12">
+                @csrf
+                <input type="hidden" name="collection" value="collateral">
+                <div class="sm:col-span-5">
+                    <label class="mb-1 block text-xs font-bold uppercase text-ink">Nama / Jenis Aset *</label>
+                    <input type="text" name="title" required placeholder="Mis. Rumah Tinggal & Tanah SHM 150m2" class="field">
+                </div>
+                <div class="sm:col-span-3">
+                    <label class="mb-1 block text-xs font-bold uppercase text-ink">Harga Limit / Sertifikat</label>
+                    <input type="text" name="link_label" placeholder="Mis. SHM · Rp 350 Juta" class="field">
+                </div>
+                <div class="sm:col-span-4">
+                    <label class="mb-1 block text-xs font-bold uppercase text-ink">Foto Aset *</label>
+                    <input type="file" name="image" accept="image/*" required class="field text-xs">
+                </div>
+                <div class="sm:col-span-9">
+                    <label class="mb-1 block text-xs font-bold uppercase text-ink">Lokasi &amp; Spesifikasi Singkat</label>
+                    <input type="text" name="caption" placeholder="Lokasi, luas tanah/bangunan, akses jalan..." class="field">
+                </div>
+                <div class="sm:col-span-3 sm:self-end">
+                    <x-button type="submit" variant="brand" class="w-full">Tambah Aset Agunan</x-button>
+                </div>
+            </form>
+
+            <div class="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                @foreach ($collaterals ?? [] as $col)
+                    <div class="border border-line p-3">
+                        <img src="{{ $col->url }}" alt="{{ $col->title }}" class="aspect-[16/10] w-full object-cover">
+                        <div class="mt-3 flex items-start justify-between gap-2">
+                            <div>
+                                @if ($col->link_label)
+                                    <span class="inline-block bg-soft px-2 py-0.5 text-[10px] font-bold uppercase tracking-[0.1em] text-brand-dark">{{ $col->link_label }}</span>
+                                @endif
+                                <p class="mt-1 text-sm font-bold text-ink">{{ $col->title }}</p>
+                                @if ($col->caption)
+                                    <p class="mt-1 text-xs text-muted">{{ $col->caption }}</p>
+                                @endif
+                            </div>
+                            <form action="{{ route('admin.profile.media.destroy', $col) }}" method="POST">
+                                @csrf
+                                @method('DELETE')
+                                <button type="submit" class="cursor-pointer text-xs font-semibold text-red-600 hover:underline">Hapus</button>
+                            </form>
+                        </div>
+                    </div>
+                @endforeach
+            </div>
+        </section>
+
+        {{-- TAB 3E: INFO KARIR & LOWONGAN KERJA --}}
+        <section id="karir" data-admin-tab-panel="karir" class="{{ $activeTab === 'karir' ? '' : 'hidden' }} border border-line bg-white p-6 sm:p-8">
+            <div class="border-b border-line pb-4">
+                <h2 class="text-lg font-bold text-ink">Info Karir &amp; Lowongan Kerja</h2>
+                <p class="mt-1 text-xs text-muted">Tambahkan pengumuman lowongan kerja resmi yang akan tampil di halaman Tentang Kami &rarr; Karir &amp; Lowongan.</p>
+            </div>
+
+            <form action="{{ route('admin.profile.media.store') }}" method="POST" enctype="multipart/form-data" class="mt-6 grid gap-4 border border-line bg-soft p-5 sm:grid-cols-12">
+                @csrf
+                <input type="hidden" name="collection" value="career">
+                <div class="sm:col-span-6">
+                    <label class="mb-1 block text-xs font-bold uppercase text-ink">Posisi Jabatan *</label>
+                    <input type="text" name="title" required placeholder="Mis. Account Officer (AO) Kredit" class="field">
+                </div>
+                <div class="sm:col-span-6">
+                    <label class="mb-1 block text-xs font-bold uppercase text-ink">Status &amp; Penempatan</label>
+                    <input type="text" name="link_label" placeholder="Mis. Penuh Waktu · Kantor Pusat" class="field">
+                </div>
+                <div class="sm:col-span-9">
+                    <label class="mb-1 block text-xs font-bold uppercase text-ink">Kualifikasi &amp; Persyaratan *</label>
+                    <input type="text" name="caption" required placeholder="Pendidikan min. D3/S1, komunikatif, memiliki SIM C..." class="field">
+                </div>
+                <div class="sm:col-span-3 sm:self-end">
+                    <x-button type="submit" variant="brand" class="w-full">Tambah Lowongan</x-button>
+                </div>
+            </form>
+
+            <div class="mt-6 grid gap-4 sm:grid-cols-2">
+                @foreach ($careers ?? [] as $job)
+                    <div class="flex items-start justify-between gap-4 border border-line p-4">
+                        <div>
+                            <span class="inline-block bg-soft px-2 py-0.5 text-[10px] font-bold uppercase tracking-[0.1em] text-brand-dark">{{ $job->link_label ?: 'Penuh Waktu' }}</span>
+                            <p class="mt-1 text-sm font-bold text-ink">{{ $job->title }}</p>
+                            <p class="mt-1 text-xs text-muted">{{ $job->caption }}</p>
+                        </div>
+                        <form action="{{ route('admin.profile.media.destroy', $job) }}" method="POST">
+                            @csrf
+                            @method('DELETE')
+                            <button type="submit" class="cursor-pointer text-xs font-semibold text-red-600 hover:underline">Hapus</button>
+                        </form>
                     </div>
                 @endforeach
             </div>

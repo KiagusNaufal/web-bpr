@@ -22,6 +22,9 @@ class ProfileController extends Controller
             'profile' => CompanyProfile::current(),
             'orgChart' => Media::where('collection', 'org_chart')->latest('id')->first(),
             'awards' => Media::where('collection', 'award')->orderBy('sort_order')->get(),
+            'galleries' => Media::where('collection', 'gallery')->orderBy('sort_order')->get(),
+            'collaterals' => Media::where('collection', 'collateral')->orderBy('sort_order')->get(),
+            'careers' => Media::where('collection', 'career')->orderBy('sort_order')->get(),
             'structures' => OrganizationalStructure::orderBy('group')->orderBy('sort_order')->get(),
             'branches' => Branch::orderBy('sort_order')->get(),
             'testimonials' => Testimonial::orderBy('sort_order')->get(),
@@ -39,6 +42,7 @@ class ProfileController extends Controller
             'vision' => ['nullable', 'string'],
             'missions_text' => ['nullable', 'string'],
             'license_info' => ['nullable', 'string', 'max:255'],
+            'lps_rate' => ['nullable', 'string', 'max:30'],
             'address' => ['nullable', 'string', 'max:255'],
             'phone' => ['nullable', 'string', 'max:40'],
             'email' => ['nullable', 'email', 'max:140'],
@@ -69,6 +73,7 @@ class ProfileController extends Controller
             'vision' => $validated['vision'] ?? null,
             'missions' => $missions,
             'license_info' => $validated['license_info'] ?? null,
+            'lps_rate' => $validated['lps_rate'] ?? '6,75%',
             'address' => $validated['address'] ?? null,
             'phone' => $validated['phone'] ?? null,
             'email' => $validated['email'] ?? null,
@@ -185,17 +190,19 @@ class ProfileController extends Controller
 
     public function storeMedia(Request $request): RedirectResponse
     {
+        $isCareer = $request->input('collection') === 'career';
+
         $validated = $request->validate([
-            'collection' => ['required', 'in:banner,promo,org_chart,award'],
+            'collection' => ['required', 'in:banner,promo,org_chart,award,gallery,collateral,career'],
             'title' => ['required', 'string', 'max:160'],
-            'caption' => ['nullable', 'string', 'max:255'],
+            'caption' => ['nullable', 'string', 'max:600'],
             'link_url' => ['nullable', 'string', 'max:255'],
-            'link_label' => ['nullable', 'string', 'max:60'],
-            'image' => ['required', 'image', 'max:6144'],
+            'link_label' => ['nullable', 'string', 'max:100'],
+            'image' => [$isCareer ? 'nullable' : 'required', 'image', 'max:6144'],
         ]);
 
         $file = $request->file('image');
-        $path = $file->store('banners', 'public');
+        $path = $file ? $file->store('banners', 'public') : '/images/demo/office.jpg';
 
         if ($validated['collection'] === 'org_chart') {
             Media::where('collection', 'org_chart')->delete();
@@ -208,8 +215,8 @@ class ProfileController extends Controller
             'link_url' => $validated['link_url'] ?? null,
             'link_label' => $validated['link_label'] ?? null,
             'path' => $path,
-            'mime_type' => $file->getMimeType() ?: 'image/jpeg',
-            'size' => $file->getSize() ?: 0,
+            'mime_type' => $file?->getMimeType() ?: 'image/jpeg',
+            'size' => $file?->getSize() ?: 0,
             'sort_order' => Media::where('collection', $validated['collection'])->count() + 1,
             'uploaded_by' => $request->user()?->id,
         ]);
@@ -217,17 +224,26 @@ class ProfileController extends Controller
         $tab = match ($validated['collection']) {
             'org_chart' => 'pengurus',
             'award' => 'penghargaan',
+            'gallery' => 'galeri',
+            'collateral' => 'agunan',
+            'career' => 'karir',
             default => 'media',
         };
 
-        return redirect()->route('admin.profile.edit', ['tab' => $tab])->with('success', 'Gambar berhasil disimpan.');
+        return redirect()->route('admin.profile.edit', ['tab' => $tab])->with('success', 'Data berhasil disimpan.');
     }
 
     public function destroyMedia(Media $media): RedirectResponse
     {
-        $tab = $media->collection === 'award' ? 'penghargaan' : 'media';
+        $tab = match ($media->collection) {
+            'award' => 'penghargaan',
+            'gallery' => 'galeri',
+            'collateral' => 'agunan',
+            'career' => 'karir',
+            default => 'media',
+        };
         $media->delete();
 
-        return redirect()->route('admin.profile.edit', ['tab' => $tab])->with('success', 'Media berhasil dihapus.');
+        return redirect()->route('admin.profile.edit', ['tab' => $tab])->with('success', 'Data berhasil dihapus.');
     }
 }

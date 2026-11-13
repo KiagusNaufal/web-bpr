@@ -36,6 +36,9 @@ Route::get('/laporan-keuangan/{report}/unduh', [FinancialReportController::class
 
 Route::get('/kontak', [ContactController::class, 'show'])->name('contact');
 Route::post('/kontak', [ContactController::class, 'store'])->middleware('throttle:10,1')->name('contact.store');
+Route::get('/pengajuan', [ContactController::class, 'application'])->name('application');
+Route::get('/pengaduan', [ContactController::class, 'complaint'])->name('complaint');
+Route::get('/lelang-agunan', [ProductController::class, 'collaterals'])->name('collaterals');
 
 /*
 |--------------------------------------------------------------------------

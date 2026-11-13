@@ -8,6 +8,10 @@
             @endif
             <p class="mt-4 max-w-sm text-sm leading-relaxed">{{ $profile->tagline }}</p>
             <p class="mt-6 max-w-sm text-xs leading-relaxed text-white/60">{{ $profile->license_info }}</p>
+            <p class="mt-2 max-w-sm text-xs leading-relaxed text-white/60">
+                Tingkat bunga penjaminan LPS BPR: <strong class="text-white/80">{{ $profile->lps_rate ?: '6,75%' }}</strong>
+                &middot; Dijamin LPS hingga Rp 2 miliar per nasabah per bank.
+            </p>
 
             {{-- Ikon Media Sosial & WhatsApp --}}
             <div class="mt-6 flex items-center gap-3">
@@ -45,20 +49,21 @@
         </div>
 
         <div class="md:col-span-3">
-            <h2 class="font-sans text-xs font-semibold uppercase tracking-[0.14em] text-white">Tautan</h2>
-            <ul class="mt-5 space-y-3 text-sm">
+            <h2 class="font-sans text-xs font-semibold uppercase tracking-[0.14em] text-white">Tautan &amp; Layanan</h2>
+            <ul class="mt-5 space-y-2.5 text-sm">
                 <li><a class="hover:text-white hover:underline" href="{{ route('products.index') }}">Produk dan Layanan</a></li>
+                <li><a class="hover:text-white hover:underline" href="{{ route('application') }}">Formulir Pengajuan Online</a></li>
+                <li><a class="hover:text-white hover:underline" href="{{ route('collaterals') }}">Info Lelang &amp; Agunan</a></li>
                 <li><a class="hover:text-white hover:underline" href="{{ route('about') }}">Tentang Kami</a></li>
-                <li><a class="hover:text-white hover:underline" href="{{ route('articles.index') }}">Informasi</a></li>
                 <li><a class="hover:text-white hover:underline" href="{{ route('reports.index') }}">Laporan Keuangan</a></li>
-                <li><a class="hover:text-white hover:underline" href="{{ route('contact') }}">Kontak</a></li>
+                <li><a class="hover:text-white hover:underline" href="{{ route('complaint') }}">Pengaduan Nasabah</a></li>
             </ul>
         </div>
     </div>
     <div class="border-t border-white/15">
         <div class="container-page flex flex-col gap-2 py-5 text-xs text-white/60 sm:flex-row sm:justify-between">
             <p>&copy; {{ date('Y') }} {{ $profile->name }}. Seluruh hak cipta dilindungi.</p>
-            <p>Terdaftar dan diawasi sesuai ketentuan yang berlaku. [Lengkapi sesuai data resmi]</p>
+            <p>Berizin dan diawasi oleh Otoritas Jasa Keuangan (OJK) serta merupakan Peserta Penjaminan LPS.</p>
         </div>
     </div>
 </footer>

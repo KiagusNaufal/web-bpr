@@ -15,9 +15,14 @@ class ContactMessageController extends Controller
     public function index(Request $request): View
     {
         $status = MessageStatus::tryFrom((string) $request->query('status'));
+        $category = $request->query('category');
+        if (! in_array($category, ['umum', 'pengajuan', 'pengaduan'], true)) {
+            $category = null;
+        }
         $search = trim((string) $request->query('q'));
 
         $messages = ContactMessage::query()
+            ->when($category, fn ($q) => $q->where('category', $category))
             ->when($status, fn ($q) => $q->where('status', $status->value))
             ->when($search !== '', fn ($q) => $q->where(function ($sub) use ($search) {
                 $sub->where('name', 'like', "%{$search}%")
@@ -32,6 +37,7 @@ class ContactMessageController extends Controller
         return view('admin.messages.index', [
             'messages' => $messages,
             'activeStatus' => $status,
+            'activeCategory' => $category,
             'statuses' => MessageStatus::cases(),
             'search' => $search,
         ]);

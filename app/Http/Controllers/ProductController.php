@@ -39,4 +39,11 @@ class ProductController extends Controller
             'related' => $related,
         ]);
     }
+
+    public function collaterals(): View
+    {
+        return view('pages.collaterals', [
+            'collaterals' => Media::where('collection', 'collateral')->orderBy('sort_order')->get(),
+        ]);
+    }
 }
